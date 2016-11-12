@@ -20,7 +20,7 @@ bool Game::init()
 	Size winSize(800, 600);
 
 	//creates our renderer, which looks after drawing and the window
-	renderer.init(winSize, "Thomas Was Alone");
+	renderer.init(winSize, "AStarThreading");
 
 	//set up the viewport
 	//we want the vp centred on origin and 20 units wide

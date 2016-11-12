@@ -134,8 +134,9 @@
     <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="EventListener.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Graph.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Node.h" />
+    <ClInclude Include="GraphNode.h" />
     <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

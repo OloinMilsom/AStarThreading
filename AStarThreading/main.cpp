@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "Game.h"
-
+#include "Graph.h"
 
 int main(int argc, char ** argv) {
 	Game game;
@@ -11,6 +11,8 @@ int main(int argc, char ** argv) {
 	if (!game.init()) {
 		std::cout << "Failed to init game" << '\n';
 	}
+
+	//Graph<int> * g = new Graph<int>(2, &test);
 
 	//run the game loop
 	game.loop();
