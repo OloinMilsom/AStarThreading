@@ -2,7 +2,8 @@
 #include <iostream>
 
 Renderer::Renderer() 
-	:sdl_renderer(NULL){
+	:sdl_renderer(NULL),
+	 windowSize(Size()){
 }
 
 bool Renderer::init(const Size& winSize, const char* title) {
@@ -90,17 +91,16 @@ void Renderer::clear(const Colour& col) const {
 }
 
 Vector2 Renderer::worldToScreen(const Vector2 &p) const {
-	float vpTop = viewportBottomLeft.y + viewportSize.h;
-	float x = (p.x - viewportBottomLeft.x)* windowSize.w / viewportSize.w;
-	float y = (vpTop - p.y)* windowSize.h / viewportSize.h;
+	float x = p.x * windowSize.w / viewportSize.w;
+	float y = p.y * windowSize.h / viewportSize.h;
 
 	return Vector2(x, y);
 }
 
 Rect Renderer::worldToScreen(const Rect &r) const {
 	Vector2 p = worldToScreen(r.pos);
-	float sw = r.size.w*(windowSize.w / viewportSize.w);
-	float sh = -r.size.h*(windowSize.h / viewportSize.h);
+	float sw = ceil(r.size.w * (windowSize.w / viewportSize.w));
+	float sh = ceil(r.size.h * (windowSize.h / viewportSize.h));
 	Rect result = Rect(p, Size(sw, sh));
 	return result;
 }

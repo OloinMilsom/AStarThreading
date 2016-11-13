@@ -12,8 +12,6 @@ int main(int argc, char ** argv) {
 		std::cout << "Failed to init game" << '\n';
 	}
 
-	//Graph<int> * g = new Graph<int>(2, &test);
-
 	//run the game loop
 	game.loop();
 

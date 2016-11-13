@@ -8,7 +8,7 @@ private:
 	typedef GraphNode<NodeType> Node;
 
 	// function to evaluate a* heuristic
-	float (*m_heuristicFunc) (NodeType *, NodeType *);
+	float (*m_heuristicFunc) (NodeType, NodeType);
 	
 	// array of all nodes in the graph
 	Node ** m_nodes;
@@ -20,24 +20,25 @@ private:
 	int m_count;
 public:
 	// constructor / destructor
-	Graph(int size, float (*heuristicFunc) (NodeType *, NodeType *));
+	Graph(int size, float (*heuristicFunc) (NodeType, NodeType));
 	~Graph();
 
 	// accessors
 	Node ** getNodes() const;
+	int getCount() const;
 
 	// public member functions
 	bool addNode(NodeType val, int index);
 	void removeNode(int index);
 	bool addArc(int from, int to);
-	void removeArc(int index);
+	void removeArc(int from, int to);
 };
 
 #pragma region Constructors / Destructor
 
 // constructor
 template<typename NodeType>
-Graph<NodeType>::Graph(int size, float (*heuristicFunc) (NodeType *, NodeType *))
+Graph<NodeType>::Graph(int size, float (*heuristicFunc) (NodeType, NodeType))
 	:m_maxNodes(size),
 	 m_heuristicFunc(heuristicFunc),
 	 m_count(0) {
@@ -65,8 +66,14 @@ Graph<NodeType>::~Graph() {
 
 // get the node underlying node array
 template<typename NodeType>
-Node ** Graph<NodeType>::getNodes() const {
-	return m_nodes
+GraphNode<NodeType> ** Graph<NodeType>::getNodes() const {
+	return m_nodes;
+}
+
+// get the count
+template<typename NodeType>
+int Graph<NodeType>::getCount() const {
+	return m_count;
 }
 
 #pragma endregion
@@ -77,9 +84,9 @@ Node ** Graph<NodeType>::getNodes() const {
 // returns true if successful, else false
 template<typename NodeType>
 bool Graph<NodeType>::addNode(NodeType val, int index) {
-	if (m_pNodes[index] == nullptr) {
-		m_pNodes[index] = new Node(val);
-		cout++;
+	if (m_nodes[index] == nullptr) {
+		m_nodes[index] = new Node(val);
+		m_count++;
 		return true;
 	}
 	return false;
@@ -87,9 +94,41 @@ bool Graph<NodeType>::addNode(NodeType val, int index) {
 
 // removes node from the graph and remove all connections
 template<typename NodeType>
-void Graph<NodeType>::addNode(int index) {
+void Graph<NodeType>::removeNode(int index) {
 	if (m_pNodes[index] != nullptr) {
+		// remove all connections to node at given index
+		for (int i = 0; i < m_maxNodes; i++) {
+			if (m_nodes[i] != nullptr) {
+				m_nodes[i]->removeConnection(m_nodes[index])
+			}
+		}
+		// delete node from list
+		delete m_nodes[index];
+		m_nodes[index] = nullptr;
+		count--;
+	}
+}
 
+// adds a connection between two in nodes if possible
+// returns true if added, else false
+template<typename NodeType>
+bool Graph<NodeType>::addArc(int from, int to)
+{
+	if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
+		if (!m_nodes[from]->hasConnection(m_nodes[to])) {
+			m_nodes[from]->addConnection(m_nodes[to]);
+			return true;
+		}
+	}
+	return false;
+}
+
+// removes a connection between nodes if possible
+template<typename NodeType>
+void Graph<NodeType>::removeArc(int from, int to)
+{
+	if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
+		m_nodes[from]->removeConnection(m_nodes[to]);
 	}
 }
 
