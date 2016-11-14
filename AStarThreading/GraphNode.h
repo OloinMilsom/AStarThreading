@@ -18,7 +18,7 @@ public:
 	// public member functions
 	void addConnection(Node * node);
 	void removeConnection(Node * node);
-	bool hasConnection(Node * node);
+	bool hasConnection(Node * node) const;
 };
 
 #pragma region Constructor
@@ -61,7 +61,7 @@ void GraphNode<NodeType>::removeConnection(GraphNode<NodeType> * node) {
 }
 
 template<typename NodeType>
-bool GraphNode<NodeType>::hasConnection(GraphNode<NodeType> * node) {
+bool GraphNode<NodeType>::hasConnection(GraphNode<NodeType> * node) const {
 	return std::find(m_connections.begin(), m_connections.end(), node) != m_connections.end();
 }
 

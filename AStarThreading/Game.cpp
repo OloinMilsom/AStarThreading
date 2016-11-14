@@ -8,6 +8,7 @@ Game::Game()
 {
 	inputManager = new InputManager();
 	m_graph = new Graph<Tile *>(500 * 500, &Tile::manhattanDistance);
+	m_player = new Player;
 	m_quit = false;
 	m_vpWidth = 30;
 }
@@ -19,6 +20,7 @@ Game::~Game()
 
 bool Game::init()
 {
+	srand(time(0));
 	Size winSize(1000, 1000);
 
 	//creates our renderer, which looks after drawing and the window
@@ -39,6 +41,14 @@ bool Game::init()
 	initGraph();
 
 	inputManager->AddListener(EventListener::Event::QUIT, this);
+	inputManager->AddListener(EventListener::Event::W_KEY_DOWN, m_player);
+	inputManager->AddListener(EventListener::Event::A_KEY_DOWN, m_player);
+	inputManager->AddListener(EventListener::Event::S_KEY_DOWN, m_player);
+	inputManager->AddListener(EventListener::Event::D_KEY_DOWN, m_player);
+	inputManager->AddListener(EventListener::Event::W_KEY_UP, m_player);
+	inputManager->AddListener(EventListener::Event::A_KEY_UP, m_player);
+	inputManager->AddListener(EventListener::Event::S_KEY_UP, m_player);
+	inputManager->AddListener(EventListener::Event::D_KEY_UP, m_player);
 
 	return true;
 }
@@ -47,24 +57,55 @@ bool Game::initGraph()
 {
 	int size = m_vpWidth;
 	bool success = true;
-	Colour light(159, 129, 112);
-	Colour dark(245, 245, 220);
+	Colour dark(159, 129, 112);
+	Colour light(245, 245, 220);
+	Colour grey(64, 64, 64);
+
+	std::vector<int> walls;
+	int touchingWalls = 1;
+	int totalWalls = 3;
+	//setup walls
+	for (int i = 0; i < totalWalls; i++)	{
+		int x = (i+1) * size / (totalWalls + 1);
+		int length = rand() % (size / 5) + (3 * size / 5);
+		if (rand() % 2 == 0) {
+			for (int j = 0; j < length; j++) {
+				walls.push_back(x + j * size);
+			}
+		}
+		else {
+			for (int j = size - length; j < size; j++) {
+				walls.push_back(x + j * size);
+			}
+		}
+		
+	}
+
 	for (int i = 0; i < size * size; i++) {
-		Tile * tile = new Tile(Rect(i % size, i / size, 1, 1), i % 2 == 0 ? ((i/ size) % 2 == 0 ? light : dark) : (i / size) % 2 == 0 ? dark : light);
+		Tile * tile = new Tile(Rect(i % size, i / size, 1, 1), std::find(walls.begin(), walls.end(), i) != walls.end());
+		if (tile->getIsWall()) {
+			tile->setColour(grey);
+		}
+		else {
+			(i + (i / size) % 2) % 2 == 0 ? tile->setColour(light) : tile->setColour(dark);
+		}
 		success &= m_graph->addNode(tile, i);
 	}
+	GraphNode<Tile *> ** nodes = m_graph->getNodes();
 	for (int i = 0; i < size * size; i++) {
-		if (i / size != 0) {
-			m_graph->addArc(i, i - size);
-		}
-		if (i / size != size - 1) {
-			m_graph->addArc(i, i + size);
-		}
-		if (i % size != 0) {
-			m_graph->addArc(i, i - 1);
-		}
-		if (i % size != size - 1) {
-			m_graph->addArc(i, i + 1);
+		if (!nodes[i]->getVal()->getIsWall()) {
+			if (i / size != 0 && !nodes[i - size]->getVal()->getIsWall()) {
+				m_graph->addArc(i, i - size);
+			}
+			if (i / size != size - 1 && !nodes[i + size]->getVal()->getIsWall()) {
+				m_graph->addArc(i, i + size);
+			}
+			if (i % size != 0 && !nodes[i - 1]->getVal()->getIsWall()) {
+				m_graph->addArc(i, i - 1);
+			}
+			if (i % size != size - 1 && !nodes[i + 1]->getVal()->getIsWall()) {
+				m_graph->addArc(i, i + 1);
+			}
 		}
 	}
 	return success;
@@ -83,6 +124,9 @@ void Game::update()
 {
 	unsigned int currentTime = SDL_GetTicks();//millis since game started
 	unsigned int deltaTime = currentTime - lastTime;//time since last update
+
+	m_player->update(m_graph, m_vpWidth);
+
 	if (deltaTime > SCREEN_TICKS_PER_FRAME + 3)
 	{
 		deltaTime = 0;
@@ -98,6 +142,8 @@ void Game::render()
 	for (int i = 0; i < m_graph->getCount(); i++) {
 		nodes[i]->getVal()->render(m_renderer);
 	}
+
+	m_player->render(m_renderer);
 
 	m_renderer->present();// display the new frame (swap buffers)
 }

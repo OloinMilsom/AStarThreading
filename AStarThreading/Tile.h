@@ -6,12 +6,15 @@ class Tile {
 private:
 	Rect m_rect;
 	Colour m_col;
+	bool m_isWall;
 public:
 	// constructor
-	Tile(Rect rect = Rect(), Colour col = Colour());
+	Tile(Rect rect = Rect(), bool isWall = false);
 
 	// accessors
 	Rect getRect() const;
+	bool getIsWall() const;
+	void setColour(Colour col);
 
 	// public member functions
 	void render(Renderer * renderer) const;

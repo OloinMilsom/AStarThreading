@@ -4,7 +4,9 @@
 #include "EventListener.h"
 #include "Graph.h"
 #include "Tile.h"
+#include "Player.h"
 #include <vector>
+#include <time.h>
 
 /** The game objct whic manages the game loop*/
 class Game : public EventListener
@@ -17,6 +19,7 @@ private:
 	bool m_quit;
 
 	Graph<Tile *> * m_graph;
+	Player * m_player;
 	int m_vpWidth;
 
 public:
