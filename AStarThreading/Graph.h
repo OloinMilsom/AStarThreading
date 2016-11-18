@@ -1,6 +1,8 @@
 #pragma once
 #include "GraphNode.h"
 #include <iostream>
+#include <vector>
+#include <queue>
 
 template<typename NodeType> class Graph {
 private:
@@ -11,20 +13,24 @@ private:
 	float (*m_heuristicFunc) (NodeType, NodeType);
 	
 	// array of all nodes in the graph
-	Node ** m_nodes;
+	std::vector<Node *> m_nodes;
 	
 	// maximum number of nodes in the graph
 	int m_maxNodes;
 
 	// the actual number of nodes in the graph
 	int m_count;
+
+	// aStar comparison functor
+
+
 public:
 	// constructor / destructor
 	Graph(int size, float (*heuristicFunc) (NodeType, NodeType));
 	~Graph();
 
 	// accessors
-	Node ** getNodes() const;
+	std::vector<Node *> getNodes() const;
 	int getCount() const;
 	Node * getNode(int index) const;
 
@@ -34,6 +40,7 @@ public:
 	bool addArc(int from, int to);
 	void removeArc(int from, int to);
 	bool connectionExists(int from, int to) const;
+	void aStar(int from, int to, std::vector<NodeType> * path);
 };
 
 #pragma region Constructors / Destructor
@@ -45,7 +52,7 @@ Graph<NodeType>::Graph(int size, float (*heuristicFunc) (NodeType, NodeType))
 	 m_heuristicFunc(heuristicFunc),
 	 m_count(0) {
 	// create all nodes and clear it to nullptr
-	m_nodes = new Node * [m_maxNodes];
+	m_nodes = std::vector<Node *>(m_maxNodes);
 	for (int i = 0; i < m_maxNodes; i++) {
 		m_nodes[i] = nullptr;
 	}
@@ -68,7 +75,7 @@ Graph<NodeType>::~Graph() {
 
 // get the node underlying node array
 template<typename NodeType>
-GraphNode<NodeType> ** Graph<NodeType>::getNodes() const {
+std::vector<GraphNode<NodeType> *> Graph<NodeType>::getNodes() const {
 	return m_nodes;
 }
 
@@ -156,6 +163,66 @@ bool Graph<NodeType>::connectionExists(int from, int to) const {
 		}
 	}
 	return false;
+}
+
+template<typename NodeType>
+void Graph<NodeType>::aStar(int from, int to, std::vector<NodeType>* path) {
+	/*function A*(start, goal)
+    // The set of nodes already evaluated.
+    closedSet := {}
+    // The set of currently discovered nodes still to be evaluated.
+    // Initially, only the start node is known.
+    openSet := {start}
+    // For each node, which node it can most efficiently be reached from.
+    // If a node can be reached from many nodes, cameFrom will eventually contain the
+    // most efficient previous step.
+    cameFrom := the empty map
+
+    // For each node, the cost of getting from the start node to that node.
+    gScore := map with default value of Infinity
+    // The cost of going from start to start is zero.
+    gScore[start] := 0 
+    // For each node, the total cost of getting from the start node to the goal
+    // by passing by that node. That value is partly known, partly heuristic.
+    fScore := map with default value of Infinity
+    // For the first node, that value is completely heuristic.
+    fScore[start] := heuristic_cost_estimate(start, goal)
+
+    while openSet is not empty
+        current := the node in openSet having the lowest fScore[] value
+        if current = goal
+            return reconstruct_path(cameFrom, current)
+
+        openSet.Remove(current)
+        closedSet.Add(current)
+        for each neighbor of current
+            if neighbor in closedSet
+                continue		// Ignore the neighbor which is already evaluated.
+            // The distance from start to a neighbor
+            tentative_gScore := gScore[current] + dist_between(current, neighbor)
+            if neighbor not in openSet	// Discover a new node
+                openSet.Add(neighbor)
+            else if tentative_gScore >= gScore[neighbor]
+                continue		// This is not a better path.
+
+            // This path is the best until now. Record it!
+            cameFrom[neighbor] := current
+            gScore[neighbor] := tentative_gScore
+            fScore[neighbor] := gScore[neighbor] + heuristic_cost_estimate(neighbor, goal)
+
+    return failure
+
+function reconstruct_path(cameFrom, current)
+    total_path := [current]
+    while current in cameFrom.Keys:
+        current := cameFrom[current]
+        total_path.append(current)
+    return total_path*/
+	typedef GraphNode<NodeType> Node;
+	if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
+		std::vector<Node *> closedList;
+		//std::priority_queue<<Node *>, std::vector<Node *>, > openList;
+	}
 }
 
 #pragma endregion

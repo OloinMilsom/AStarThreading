@@ -7,6 +7,7 @@ private:
 	typedef GraphNode<NodeType> Node;
 	NodeType m_val;
 	std::list<Node *> m_connections;
+	
 public:
 	// constructor
 	GraphNode(NodeType val);

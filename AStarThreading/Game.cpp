@@ -7,10 +7,10 @@ const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 Game::Game()
 {
 	inputManager = new InputManager();
-	m_graph = new Graph<Tile *>(500 * 500, &Tile::manhattanDistance);
 	m_player = new Player;
 	m_quit = false;
-	m_vpWidth = 30;
+	m_vpWidth = 10;
+	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 }
 
 Game::~Game()
@@ -39,6 +39,12 @@ bool Game::init()
 	lastTime = SDL_GetTicks();
 
 	initGraph();
+	for (int i = 0; i < 10; i++) {
+		m_enemies.push_back(new Enemy(rand() % (m_vpWidth * m_vpWidth)));
+		if (m_graph->getNode(m_enemies[i]->getIndexPos())->getVal()->getIsWall()) {
+			m_enemies[i]->setIndexPos(m_enemies[i]->getIndexPos() + 1);
+		}
+	}
 
 	inputManager->AddListener(EventListener::Event::QUIT, this);
 	inputManager->AddListener(EventListener::Event::W_KEY_DOWN, m_player);
@@ -91,7 +97,7 @@ bool Game::initGraph()
 		}
 		success &= m_graph->addNode(tile, i);
 	}
-	GraphNode<Tile *> ** nodes = m_graph->getNodes();
+	std::vector<GraphNode<Tile *> *> nodes = m_graph->getNodes();
 	for (int i = 0; i < size * size; i++) {
 		if (!nodes[i]->getVal()->getIsWall()) {
 			if (i / size != 0 && !nodes[i - size]->getVal()->getIsWall()) {
@@ -126,6 +132,9 @@ void Game::update()
 	unsigned int deltaTime = currentTime - lastTime;//time since last update
 
 	m_player->update(m_graph, m_vpWidth);
+	for (int i = 0; i < m_enemies.size(); i++) {
+		m_enemies[i]->update(m_graph, m_vpWidth);
+	}
 
 	if (deltaTime > SCREEN_TICKS_PER_FRAME + 3)
 	{
@@ -138,12 +147,16 @@ void Game::render()
 {
 	m_renderer->clear(Colour(0,0,0,255));
 
-	GraphNode<Tile *> ** nodes = m_graph->getNodes();
+	std::vector<GraphNode<Tile *> *> nodes = m_graph->getNodes();
 	for (int i = 0; i < m_graph->getCount(); i++) {
 		nodes[i]->getVal()->render(m_renderer);
 	}
 
 	m_player->render(m_renderer);
+
+	for (int i = 0; i < m_enemies.size(); i++) {
+		m_enemies[i]->render(m_renderer);
+	}
 
 	m_renderer->present();// display the new frame (swap buffers)
 }

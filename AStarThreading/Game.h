@@ -5,6 +5,7 @@
 #include "Graph.h"
 #include "Tile.h"
 #include "Player.h"
+#include "Enemy.h"
 #include <vector>
 #include <time.h>
 
@@ -20,6 +21,7 @@ private:
 
 	Graph<Tile *> * m_graph;
 	Player * m_player;
+	std::vector<Enemy *> m_enemies;
 	int m_vpWidth;
 
 public:

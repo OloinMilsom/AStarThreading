@@ -2,7 +2,7 @@
 #include <iostream>
 
 Player::Player(int pos)
-	:m_indexPos(pos) {
+	:GameEntity(pos) {
 	m_keydowns = std::vector<bool>(4, false);
 }
 
@@ -10,11 +10,7 @@ int Player::getIndexPos() const {
 	return m_indexPos;
 }
 
-void Player::setWorldPos(Vector2 pos) {
-	m_worldPos = pos;
-}
-
-void Player::update(Graph<Tile*> const * graph, int size) {
+void Player::update(Graph<Tile*> * graph, int size) {
 	if (m_keydowns[0] && graph->connectionExists(m_indexPos, m_indexPos - size)) {
 		m_indexPos -= size;
 		m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
@@ -27,7 +23,6 @@ void Player::update(Graph<Tile*> const * graph, int size) {
 		m_indexPos += size;
 		m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
 	}
-	std::cout << m_keydowns[3] << std::endl;
 	if (m_keydowns[3]) {
 		if (graph->connectionExists(m_indexPos, m_indexPos + 1)) {
 			m_indexPos += 1;
@@ -38,7 +33,7 @@ void Player::update(Graph<Tile*> const * graph, int size) {
 
 void Player::render(Renderer * renderer) const
 {
-	renderer->drawWorldFillRect(Rect(m_worldPos, Size(0.5, 0.5)), Colour(255, 0, 0));
+	renderer->drawWorldFillRect(Rect(m_worldPos, Size(0.5, 0.5)), Colour(0, 255, 0));
 }
 
 void Player::onEvent(Event e) {
