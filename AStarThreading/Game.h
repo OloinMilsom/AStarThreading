@@ -21,6 +21,7 @@ private:
 
 	Graph<Tile *> * m_graph;
 	Player * m_player;
+	int m_noOfEnemies;
 	std::vector<Enemy *> m_enemies;
 	int m_vpWidth;
 

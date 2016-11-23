@@ -9,7 +9,8 @@ Game::Game()
 	inputManager = new InputManager();
 	m_player = new Player;
 	m_quit = false;
-	m_vpWidth = 10;
+	m_vpWidth = 30;
+	m_noOfEnemies = 1;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 }
 
@@ -39,7 +40,7 @@ bool Game::init()
 	lastTime = SDL_GetTicks();
 
 	initGraph();
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < m_noOfEnemies; i++) {
 		m_enemies.push_back(new Enemy(rand() % (m_vpWidth * m_vpWidth)));
 		if (m_graph->getNode(m_enemies[i]->getIndexPos())->getVal()->getIsWall()) {
 			m_enemies[i]->setIndexPos(m_enemies[i]->getIndexPos() + 1);
@@ -130,6 +131,9 @@ void Game::update()
 {
 	unsigned int currentTime = SDL_GetTicks();//millis since game started
 	unsigned int deltaTime = currentTime - lastTime;//time since last update
+
+	/*auto p = new std::vector<Tile *>();
+	m_graph->aStar(0, 45, p);*/
 
 	m_player->update(m_graph, m_vpWidth);
 	for (int i = 0; i < m_enemies.size(); i++) {

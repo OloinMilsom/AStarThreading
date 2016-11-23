@@ -1,8 +1,10 @@
 #pragma once
 #include "GraphNode.h"
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <queue>
+
 
 template<typename NodeType> class Graph {
 private:
@@ -21,8 +23,18 @@ private:
 	// the actual number of nodes in the graph
 	int m_count;
 
-	// aStar comparison functor
+	// aStar Node struct so algorithm can store g(n) and f(n)
+	struct AStarNode {
+	public:
+		AStarNode(Node * n = nullptr, Node * p = nullptr, float g = 0.0f, float h = 0.0f) : node(n), prev(p), gOfN(g), hOfN(h) { ; }
+		Node * node;
+		Node * prev;
+		float gOfN;
+		float hOfN;
+	};
 
+	// private member functions
+	static bool compareNodes(AStarNode * n1, AStarNode * n2);
 
 public:
 	// constructor / destructor
@@ -91,6 +103,7 @@ GraphNode<NodeType> * Graph<NodeType>::getNode(int index) const
 	if (index >= 0 && index < m_maxNodes) {
 		return m_nodes[index];
 	}
+	return nullptr;
 }
 
 #pragma endregion
@@ -218,12 +231,50 @@ function reconstruct_path(cameFrom, current)
         current := cameFrom[current]
         total_path.append(current)
     return total_path*/
-	typedef GraphNode<NodeType> Node;
+
+	// check the nodes exist
 	if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
-		std::vector<Node *> closedList;
-		//std::priority_queue<<Node *>, std::vector<Node *>, > openList;
+		// initialise open and closed lists
+		std::vector<AStarNode *> closedSet;
+		std::vector<AStarNode *> openSet;
+		
+		NodeType finalVal = m_nodes[to]->getVal();
+		AStarNode startNode = AStarNode(m_nodes[from], nullptr, 0, m_heuristicFunc(m_nodes[from]->getVal(), finalVal));
+		openSet.push_back(&startNode);
+
+		while (!openSet.empty()) {
+			AStarNode * current = *std::max_element(openSet.begin(), openSet.end(), compareNodes);
+			openSet.erase(std::remove(openSet.begin(), openSet.end(), current), openSet.end());
+			closedSet.push_back(current);
+
+			// for all neighbours of current
+			std::list<Node *> neighbours = current->node->getConnections();
+			for (std::list<Node *>::iterator iter = neighbours.begin(); iter != neighbours.end(); iter++) {
+				// if neighbour not on closedList
+				if (!std::any_of(closedSet.begin(), closedSet.end(), [&iter](AStarNode * x) { return x->node == *iter; })) {
+					// g of n to the neighbour
+					float tentativeG = current->gOfN + 1;
+					AStarNode * neighbourNode();
+					if (!std::any_of(openSet.begin(), openSet.end(), [&iter](AStarNode * x) { return x->node == *iter; })) {
+						openSet.push_back()
+					}
+					else if (tentativeG >= )
+					{
+						continue;
+					}
+				}
+			}
+		}
 	}
 }
 
 #pragma endregion
 
+#pragma region Private Functions
+
+template<typename NodeType>
+bool Graph<NodeType>::compareNodes(AStarNode * n1, AStarNode * n2) {
+	return (n1->gOfN + n1->hOfN) < (n2->gOfN + n2->hOfN);
+}
+
+#pragma endregion
