@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include <queue>
+#include <map>
 
 
 template<typename NodeType> class Graph {
@@ -24,17 +24,16 @@ private:
 	int m_count;
 
 	// aStar Node struct so algorithm can store g(n) and f(n)
-	struct AStarNode {
+	struct AStarData {
 	public:
-		AStarNode(Node * n = nullptr, Node * p = nullptr, float g = 0.0f, float h = 0.0f) : node(n), prev(p), gOfN(g), hOfN(h) { ; }
-		Node * node;
+		AStarData(Node * p = nullptr, float g = std::numeric_limits<float>::infinity(), float h = 0.0f) : prev(p), gOfN(g), hOfN(h) { ; }
 		Node * prev;
 		float gOfN;
 		float hOfN;
 	};
 
 	// private member functions
-	static bool compareNodes(AStarNode * n1, AStarNode * n2);
+	static bool compareNodes(std::pair<Node *, AStarData *> n1, std::pair<Node *, AStarData *> n2);
 
 public:
 	// constructor / destructor
@@ -235,35 +234,59 @@ function reconstruct_path(cameFrom, current)
 	// check the nodes exist
 	if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
 		// initialise open and closed lists
-		std::vector<AStarNode *> closedSet;
-		std::vector<AStarNode *> openSet;
+		std::map<Node *, AStarData *> closedSet;
+		std::map<Node *, AStarData *> openSet;
 		
 		NodeType finalVal = m_nodes[to]->getVal();
-		AStarNode startNode = AStarNode(m_nodes[from], nullptr, 0, m_heuristicFunc(m_nodes[from]->getVal(), finalVal));
-		openSet.push_back(&startNode);
+		std::pair<Node *, AStarData *> pathNode;
+		Node * startNode = m_nodes[from];
+		AStarData startData = AStarData(nullptr, 0, m_heuristicFunc(m_nodes[from]->getVal(), finalVal));
+		openSet.insert(std::make_pair(startNode, &startData));
 
 		while (!openSet.empty()) {
-			AStarNode * current = *std::max_element(openSet.begin(), openSet.end(), compareNodes);
-			openSet.erase(std::remove(openSet.begin(), openSet.end(), current), openSet.end());
-			closedSet.push_back(current);
+			std::map<Node *, AStarData *>::iterator currentIter = std::max_element(openSet.begin(), openSet.end(), compareNodes);
+			std::pair<Node *, AStarData *> current = *currentIter;
+			if (current.first == m_nodes[to])
+			{
+				pathNode = current;
+				break;
+			}
+			closedSet.insert(current);
+			openSet.erase(currentIter);
 
 			// for all neighbours of current
-			std::list<Node *> neighbours = current->node->getConnections();
+			std::list<Node *> neighbours = current.first->getConnections();
 			for (std::list<Node *>::iterator iter = neighbours.begin(); iter != neighbours.end(); iter++) {
 				// if neighbour not on closedList
-				if (!std::any_of(closedSet.begin(), closedSet.end(), [&iter](AStarNode * x) { return x->node == *iter; })) {
+				if (!std::any_of(closedSet.begin(), closedSet.end(), [&iter](std::pair<Node *, AStarData *> x) { return x.first == *iter; })) {
 					// g of n to the neighbour
-					float tentativeG = current->gOfN + 1;
-					AStarNode * neighbourNode();
-					if (!std::any_of(openSet.begin(), openSet.end(), [&iter](AStarNode * x) { return x->node == *iter; })) {
-						openSet.push_back()
+					float tentativeG = current.second->gOfN + 1;
+					std::pair<Node *, AStarData *> neighbourNode;
+					std::map<Node *, AStarData *>::iterator neighbourIter = std::find_if(openSet.begin(), openSet.end(), [&iter](std::pair<Node *, AStarData *> x) { return x.first == *iter; });
+					//neighbourNode = *neighbourIter;
+					if (neighbourIter == openSet.end()) {
+						neighbourNode.first = *iter;
+						AStarData temp;
+						neighbourNode.second = &temp;
+						openSet.insert(neighbourNode);						
 					}
-					else if (tentativeG >= )
-					{
-						continue;
+					else {
+						neighbourNode = (*neighbourIter);
+						if (tentativeG >= neighbourNode.second->gOfN) {
+							continue;
+						}
 					}
+					neighbourNode.second->prev = current.first;
+					neighbourNode.second->gOfN = tentativeG;
+					neighbourNode.second->hOfN = m_heuristicFunc(neighbourNode.first->getVal(), finalVal);
 				}
 			}
+		}
+		while (pathNode.second->prev != nullptr)
+		{
+			path->push_back(pathNode.first->getVal());
+			std::cout << "yomama";
+			pathNode = std::make_pair(pathNode.second->prev, closedSet[pathNode.second->prev]);
 		}
 	}
 }
@@ -273,8 +296,8 @@ function reconstruct_path(cameFrom, current)
 #pragma region Private Functions
 
 template<typename NodeType>
-bool Graph<NodeType>::compareNodes(AStarNode * n1, AStarNode * n2) {
-	return (n1->gOfN + n1->hOfN) < (n2->gOfN + n2->hOfN);
+bool Graph<NodeType>::compareNodes(std::pair<Node *, AStarData *> n1, std::pair<Node *, AStarData *> n2) {
+	return (n1.second->gOfN + n1.second->hOfN) < (n2.second->gOfN + n2.second->hOfN);
 }
 
 #pragma endregion
