@@ -142,6 +142,7 @@
     <ClInclude Include="Graph.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="GraphNode.h" />
+    <ClInclude Include="my_priority_queue.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Tile.h" />

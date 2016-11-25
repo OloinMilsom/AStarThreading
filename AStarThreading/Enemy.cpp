@@ -11,7 +11,11 @@ int Enemy::getIndexPos() const {
 
 void Enemy::update(Graph<Tile*> * graph, int size) {
 	m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
-	graph->aStar(m_indexPos, 0, m_path);
+	graph->aStar(m_indexPos, graph->player, m_path);
+	for (int i = 0; i < m_path->size(); i++)
+	{
+		m_path->at(i)->setColour(Colour(0, 0, 0));
+	}
 }
 
 void Enemy::render(Renderer * renderer) const {

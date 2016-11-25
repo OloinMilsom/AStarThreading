@@ -86,5 +86,8 @@
     <ClInclude Include="Enemy.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
+    <ClInclude Include="my_priority_queue.h">
+      <Filter>Header Files\Graph</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
