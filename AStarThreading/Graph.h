@@ -244,6 +244,7 @@ function reconstruct_path(cameFrom, current)
 		openSet.insert(std::make_pair(startNode, &startData));
 
 		while (!openSet.empty()) {
+			std::cout << "here";
 			std::map<Node *, AStarData *>::iterator currentIter = std::max_element(openSet.begin(), openSet.end(), compareNodes);
 			std::pair<Node *, AStarData *> current = *currentIter;
 			if (current.first == m_nodes[to])
@@ -279,13 +280,15 @@ function reconstruct_path(cameFrom, current)
 					neighbourNode.second->prev = current.first;
 					neighbourNode.second->gOfN = tentativeG;
 					neighbourNode.second->hOfN = m_heuristicFunc(neighbourNode.first->getVal(), finalVal);
+
+					// all neighbours of current seem to be added with the same AStarData value
 				}
 			}
 		}
 		while (pathNode.second->prev != nullptr)
 		{
 			path->push_back(pathNode.first->getVal());
-			std::cout << "yomama";
+			std::cout << pathNode.first->getVal();
 			pathNode = std::make_pair(pathNode.second->prev, closedSet[pathNode.second->prev]);
 		}
 	}

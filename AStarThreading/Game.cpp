@@ -9,7 +9,7 @@ Game::Game()
 	inputManager = new InputManager();
 	m_player = new Player;
 	m_quit = false;
-	m_vpWidth = 30;
+	m_vpWidth = 100;
 	m_noOfEnemies = 1;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 }
