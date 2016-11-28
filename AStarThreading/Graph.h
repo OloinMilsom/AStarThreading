@@ -44,8 +44,6 @@ private:
 			return (n1.second.gOfN + n1.second.hOfN) > (n2.second.gOfN + n2.second.hOfN); 
 		}
 	};
-	// private member functions
-	static bool compareNodes(std::pair<Node *, AStarData> n1, std::pair<Node *, AStarData> n2);
 
 public:
 
@@ -65,7 +63,7 @@ public:
 	bool addArc(int from, int to);
 	void removeArc(int from, int to);
 	bool connectionExists(int from, int to) const;
-	void aStar(int from, int to, std::vector<NodeType> * path);
+	void aStar(int from, int to, std::vector<NodeType> * path, void (*processNode)(NodeType));
 };
 
 #pragma region Constructors / Destructor
@@ -192,7 +190,7 @@ bool Graph<NodeType>::connectionExists(int from, int to) const {
 }
 
 template<typename NodeType>
-void Graph<NodeType>::aStar(int from, int to, std::vector<NodeType>* path) {
+void Graph<NodeType>::aStar(int from, int to, std::vector<NodeType>* path, void(*processNode)(NodeType)) {
 	/*function A*(start, goal)
     // The set of nodes already evaluated.
     closedSet := {}
@@ -250,7 +248,8 @@ function reconstruct_path(cameFrom, current)
 		// initialise open and closed lists
 		std::map<Node *, AStarData> openSetData;
 		auto comp = [&openSetData](Node * n1, Node * n2) { 
-			return (openSetData[n1].gOfN + openSetData[n1].hOfN) > (openSetData[n2].gOfN + openSetData[n2].hOfN);
+			bool ans = (openSetData[n1].gOfN + openSetData[n1].hOfN) > (openSetData[n2].gOfN + openSetData[n2].hOfN);
+			return ans;
 		};
 		std::priority_queue < Node *, std::vector<Node *>, decltype(comp)> openSet(comp);
 
@@ -283,6 +282,7 @@ function reconstruct_path(cameFrom, current)
 					// if node never checked before
 					if (!openSetData[*iter].open) {
 						openSetData[*iter].open = true;
+						processNode((*iter)->getVal());
 						openSet.push(*iter);
 					}
 					//shortest route not found
@@ -301,15 +301,6 @@ function reconstruct_path(cameFrom, current)
 			pathNode = openSetData[pathNode].prev;
 		}
 	}
-}
-
-#pragma endregion
-
-#pragma region Private Functions
-
-template<typename NodeType>
-bool Graph<NodeType>::compareNodes(std::pair<Node *, AStarData> n1, std::pair<Node *, AStarData> n2) {
-	return (n1.second.gOfN + n1.second.hOfN) > (n2.second.gOfN + n2.second.hOfN);
 }
 
 #pragma endregion

@@ -1,4 +1,5 @@
 #include "Tile.h"
+#include <iostream>
 
 Tile::Tile(Rect rect, bool isWall)
 	:m_rect(rect),

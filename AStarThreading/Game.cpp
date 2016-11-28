@@ -72,8 +72,8 @@ bool Game::initGraph()
 	int touchingWalls = 1;
 	int totalWalls = 3;
 	//setup walls
-	for (int i = 0; i < totalWalls; i++)	{
-		int x = (i+1) * size / (totalWalls + 1);
+	for (int i = 0; i < totalWalls; i++) {
+		int x = (i + 1) * size / (totalWalls + 1);
 		int length = rand() % (size / 5) + (3 * size / 5);
 		if (rand() % 2 == 0) {
 			for (int j = 0; j < length; j++) {
@@ -85,7 +85,7 @@ bool Game::initGraph()
 				walls.push_back(x + j * size);
 			}
 		}
-		
+
 	}
 
 	for (int i = 0; i < size * size; i++) {
@@ -134,14 +134,8 @@ void Game::update()
 	unsigned int currentTime = SDL_GetTicks();//millis since game started
 	unsigned int deltaTime = currentTime - lastTime;//time since last update
 
-	/*auto p = new std::vector<Tile *>();
-	m_graph->aStar(0, 45, p);*/
-	for (int i = 0; i < m_graph->getCount(); i++)
-	{
-		m_graph->getNode(i)->getVal()->resetColour();
-	}
-	std::cout << "here";
-
+													/*auto p = new std::vector<Tile *>();
+													m_graph->aStar(0, 45, p);*/
 	m_player->update(m_graph, m_vpWidth);
 	for (int i = 0; i < m_enemies.size(); i++) {
 		m_enemies[i]->update(m_graph, m_vpWidth);
@@ -156,11 +150,12 @@ void Game::update()
 //** calls render on all game entities*/
 void Game::render()
 {
-	m_renderer->clear(Colour(0,0,0,255));
+	m_renderer->clear(Colour(0, 0, 0, 255));
 
 	std::vector<GraphNode<Tile *> *> nodes = m_graph->getNodes();
 	for (int i = 0; i < m_graph->getCount(); i++) {
 		nodes[i]->getVal()->render(m_renderer);
+		nodes[i]->getVal()->resetColour();
 	}
 
 	m_player->render(m_renderer);
@@ -188,7 +183,7 @@ void Game::loop()
 		render();
 
 		unsigned int currentTime = SDL_GetTicks();//millis since game started
-		// Time since start of frame
+												  // Time since start of frame
 		int frameTicks = currentTime - lastTime;
 
 		if (frameTicks < SCREEN_TICKS_PER_FRAME)
