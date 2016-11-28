@@ -3,7 +3,6 @@
 Tile::Tile(Rect rect, bool isWall)
 	:m_rect(rect),
 	 m_isWall(isWall) {
-
 }
 
 Rect Tile::getRect() const {
@@ -16,6 +15,14 @@ bool Tile::getIsWall() const {
 
 void Tile::setColour(Colour col) {
 	m_col = col;
+}
+
+void Tile::setOriginalColour(Colour col) {
+	m_originalCol = col;
+}
+
+void Tile::resetColour() {
+	m_col = m_originalCol;
 }
 
 void Tile::render(Renderer * renderer) const {

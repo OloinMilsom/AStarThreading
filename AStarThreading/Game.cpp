@@ -9,7 +9,7 @@ Game::Game()
 	inputManager = new InputManager();
 	m_player = new Player;
 	m_quit = false;
-	m_vpWidth = 30;
+	m_vpWidth = 100;
 	m_noOfEnemies = 1;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 }
@@ -92,9 +92,11 @@ bool Game::initGraph()
 		Tile * tile = new Tile(Rect(i % size, i / size, 1, 1), std::find(walls.begin(), walls.end(), i) != walls.end());
 		if (tile->getIsWall()) {
 			tile->setColour(grey);
+			tile->setOriginalColour(grey);
 		}
 		else {
 			(i + (i / size) % 2) % 2 == 0 ? tile->setColour(light) : tile->setColour(dark);
+			(i + (i / size) % 2) % 2 == 0 ? tile->setOriginalColour(light) : tile->setOriginalColour(dark);
 		}
 		success &= m_graph->addNode(tile, i);
 	}
@@ -134,6 +136,11 @@ void Game::update()
 
 	/*auto p = new std::vector<Tile *>();
 	m_graph->aStar(0, 45, p);*/
+	for (int i = 0; i < m_graph->getCount(); i++)
+	{
+		m_graph->getNode(i)->getVal()->resetColour();
+	}
+	std::cout << "here";
 
 	m_player->update(m_graph, m_vpWidth);
 	for (int i = 0; i < m_enemies.size(); i++) {

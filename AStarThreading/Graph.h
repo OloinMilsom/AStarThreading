@@ -30,11 +30,12 @@ private:
 	// aStar Node struct so algorithm can store g(n) and f(n)
 	struct AStarData {
 	public:
-		AStarData(Node * p = nullptr, float g = std::numeric_limits<float>::infinity(), float h = 0.0f, bool m = false) : prev(p), gOfN(g), hOfN(h), marked(m) { ; }
+		AStarData(Node * p = nullptr, float g = std::numeric_limits<float>::infinity(), float h = 0.0f, bool o = false, bool c = false) : prev(p), gOfN(g), hOfN(h), open(o), closed(c) { ; }
 		Node * prev;
 		float gOfN;
 		float hOfN;
-		bool marked;
+		bool open;
+		bool closed;
 	};
 
 	struct CompareNodes {
@@ -244,69 +245,60 @@ function reconstruct_path(cameFrom, current)
         total_path.append(current)
     return total_path*/
 
-	typedef std::pair<Node *, AStarData> AStarNode;
-
 	// check the nodes exist
 	if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
 		// initialise open and closed lists
-		std::map<Node *, AStarData> closedSet;
-		my_priority_queue<AStarData, std::vector<AStarNode>, CompareNodes> openSet;
+		std::map<Node *, AStarData> openSetData;
+		auto comp = [&openSetData](Node * n1, Node * n2) { 
+			return (openSetData[n1].gOfN + openSetData[n1].hOfN) > (openSetData[n2].gOfN + openSetData[n2].hOfN);
+		};
+		std::priority_queue < Node *, std::vector<Node *>, decltype(comp)> openSet(comp);
+
 		
 		NodeType finalVal = m_nodes[to]->getVal();
-		std::pair<Node *, AStarData> pathNode;
+		Node * pathNode;
 		Node * startNode = m_nodes[from];
-		AStarData startData = AStarData(nullptr, 0, m_heuristicFunc(m_nodes[from]->getVal(), finalVal));
-		openSet.push(std::make_pair(startNode, startData));
+		AStarData startData = { nullptr, 0, m_heuristicFunc(m_nodes[from]->getVal(), finalVal) };
+		openSetData[startNode] = startData;
+		openSet.push(startNode);
 
 		while (!openSet.empty()) {
-			std::cout << "here";
-			AStarNode current = openSet.top();
-			if (current.first == m_nodes[to])
+			//std::cout << openSet.size() << std::endl;
+			Node * current = openSet.top();
+			if (current == m_nodes[to])
 			{
 				pathNode = current;
 				break;
 			}
-			closedSet.insert(current);
+			openSetData[current].closed = true;
 			openSet.pop();
 
 			// for all neighbours of current
-			std::list<Node *> neighbours = current.first->getConnections();
+			std::list<Node *> neighbours = current->getConnections();
 			for (std::list<Node *>::iterator iter = neighbours.begin(); iter != neighbours.end(); iter++) {
-				// if neighbour not on closedList
-				if (!std::any_of(closedSet.begin(), closedSet.end(), [&iter](std::pair<Node *, AStarData> x) { return x.first == *iter; })) {
+				// if neighbour not visited
+				if (!openSetData[*iter].closed) {
 					// g of n to the neighbour
-					float tentativeG = current.second.gOfN + 1;
-					std::pair<Node *, AStarData> neighbourNode;
-					auto neighbourIter = std::find_if(openSet.begin(), openSet.end(), [&iter](std::pair<Node *, AStarData> x) { return x.first == *iter; });
-					bool isNew = false;
-					//neighbourNode = *neighbourIter;
-					if (neighbourIter == openSet.end()) {
-						neighbourNode.first = *iter;
-						isNew = true;
+					float tentativeG = openSetData[current].gOfN + 1;
+					// if node never checked before
+					if (!openSetData[*iter].open) {
+						openSetData[*iter].open = true;
+						openSet.push(*iter);
 					}
-					else {
-						neighbourNode = (*neighbourIter);
-						if (tentativeG >= neighbourNode.second.gOfN) {
-							continue;
-						}
+					//shortest route not found
+					else if (tentativeG >= openSetData[*iter].gOfN) {
+						continue;
 					}
-					neighbourNode.second.prev = current.first;
-					neighbourNode.second.gOfN = tentativeG;
-					neighbourNode.second.hOfN = m_heuristicFunc(neighbourNode.first->getVal(), finalVal);
-					if (isNew)
-					{
-						openSet.push(neighbourNode);
-					}
-
-					// all neighbours of current seem to be added with the same AStarData value
+					openSetData[*iter].prev = current;
+					openSetData[*iter].gOfN = tentativeG;
+					openSetData[*iter].hOfN = m_heuristicFunc((*iter)->getVal(), finalVal);
 				}
 			}
 		}
-		while (pathNode.second.prev != nullptr)
+		while (openSetData[pathNode].prev != nullptr)
 		{
-			path->push_back(pathNode.first->getVal());
-			std::cout << pathNode.first->getVal();
-			pathNode = std::make_pair(pathNode.second.prev, closedSet[pathNode.second.prev]);
+			path->push_back(pathNode->getVal());
+			pathNode = openSetData[pathNode].prev;
 		}
 	}
 }
