@@ -31,7 +31,9 @@ void Tile::render(Renderer * renderer) const {
 }
 
 float Tile::manhattanDistance(Tile * a, Tile * b) {
-	return fabsf(a->getRect().pos.x - b->getRect().pos.x) + fabsf(a->getRect().pos.y - b->getRect().pos.y);
+	float s = (fabsf(a->getRect().pos.x - b->getRect().pos.x) + fabsf(a->getRect().pos.y - b->getRect().pos.y));
+	//a->setColour(Colour(s, s, s));
+	return s;
 }
 
 float Tile::euclidianDistance(Tile * a, Tile * b) {

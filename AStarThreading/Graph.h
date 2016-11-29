@@ -269,12 +269,15 @@ function reconstruct_path(cameFrom, current)
 				pathNode = current;
 				break;
 			}
+
+			processNode(current->getVal());
 			openSetData[current].closed = true;
 			openSet.pop();
 
 			// for all neighbours of current
 			std::list<Node *> neighbours = current->getConnections();
 			for (std::list<Node *>::iterator iter = neighbours.begin(); iter != neighbours.end(); iter++) {
+				bool isNew = false;
 				// if neighbour not visited
 				if (!openSetData[*iter].closed) {
 					// g of n to the neighbour
@@ -282,8 +285,7 @@ function reconstruct_path(cameFrom, current)
 					// if node never checked before
 					if (!openSetData[*iter].open) {
 						openSetData[*iter].open = true;
-						processNode((*iter)->getVal());
-						openSet.push(*iter);
+						isNew = true;
 					}
 					//shortest route not found
 					else if (tentativeG >= openSetData[*iter].gOfN) {
@@ -292,6 +294,9 @@ function reconstruct_path(cameFrom, current)
 					openSetData[*iter].prev = current;
 					openSetData[*iter].gOfN = tentativeG;
 					openSetData[*iter].hOfN = m_heuristicFunc((*iter)->getVal(), finalVal);
+					if (isNew) {
+						openSet.push(*iter);
+					}
 				}
 			}
 		}
