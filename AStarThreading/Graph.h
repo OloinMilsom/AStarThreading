@@ -63,7 +63,7 @@ public:
 	bool addArc(int from, int to);
 	void removeArc(int from, int to);
 	bool connectionExists(int from, int to) const;
-	void aStar(int from, int to, std::vector<NodeType> * path, void (*processNode)(NodeType));
+	void aStar(int from, int to, std::vector<NodeType> * path, void (*processNode)(NodeType, float));
 };
 
 #pragma region Constructors / Destructor
@@ -190,7 +190,7 @@ bool Graph<NodeType>::connectionExists(int from, int to) const {
 }
 
 template<typename NodeType>
-void Graph<NodeType>::aStar(int from, int to, std::vector<NodeType>* path, void(*processNode)(NodeType)) {
+void Graph<NodeType>::aStar(int from, int to, std::vector<NodeType>* path, void(*processNode)(NodeType, float)) {
 	/*function A*(start, goal)
     // The set of nodes already evaluated.
     closedSet := {}
@@ -252,7 +252,7 @@ function reconstruct_path(cameFrom, current)
 			return ans;
 		};
 		std::priority_queue < Node *, std::vector<Node *>, decltype(comp)> openSet(comp);
-
+		//std::vector<Node *> openSet;
 		
 		NodeType finalVal = m_nodes[to]->getVal();
 		Node * pathNode;
@@ -263,6 +263,8 @@ function reconstruct_path(cameFrom, current)
 
 		while (!openSet.empty()) {
 			//std::cout << openSet.size() << std::endl;
+			//std::sort(openSet.begin(), openSet.end(), comp);
+
 			Node * current = openSet.top();
 			if (current == m_nodes[to])
 			{
@@ -270,7 +272,6 @@ function reconstruct_path(cameFrom, current)
 				break;
 			}
 
-			processNode(current->getVal());
 			openSetData[current].closed = true;
 			openSet.pop();
 
@@ -296,6 +297,12 @@ function reconstruct_path(cameFrom, current)
 					openSetData[*iter].hOfN = m_heuristicFunc((*iter)->getVal(), finalVal);
 					if (isNew) {
 						openSet.push(*iter);
+					}
+					else
+					{
+						std::make_heap(const_cast<Node**>(&openSet.top()),
+							const_cast<Node**>(&openSet.top()) + openSet.size(),
+							comp);
 					}
 				}
 			}
