@@ -7,14 +7,18 @@ private:
 	typedef GraphNode<NodeType> Node;
 	NodeType m_val;
 	std::list<Node *> m_connections;
+	int m_index;
 	
 public:
 	// constructor
 	GraphNode(NodeType val);
+	~GraphNode();
 
 	// accessors
 	std::list<Node *> getConnections() const;
 	NodeType getVal() const;
+	int getIndex() const;
+	void setIndex(int i);
 
 	// public member functions
 	void addConnection(Node * node);
@@ -30,6 +34,12 @@ GraphNode<NodeType>::GraphNode(NodeType val)
 
 }
 
+template<typename NodeType>
+GraphNode<NodeType>::~GraphNode()
+{
+	delete m_val;
+}
+
 #pragma endregion
 
 #pragma region Accessors
@@ -43,6 +53,18 @@ template<typename NodeType>
 inline NodeType GraphNode<NodeType>::getVal() const
 {
 	return m_val;
+}
+
+template<typename NodeType>
+int GraphNode<NodeType>::getIndex() const
+{
+	return m_index;
+}
+
+template<typename NodeType>
+void GraphNode<NodeType>::setIndex(int i)
+{
+	m_index = i;
 }
 
 #pragma endregion

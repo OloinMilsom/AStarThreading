@@ -10,7 +10,7 @@ Game::Game()
 	m_player = new Player;
 	m_quit = false;
 	m_vpWidth = 100;
-	m_noOfEnemies = 1;
+	m_noOfEnemies = 5;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 }
 
@@ -48,6 +48,7 @@ bool Game::init()
 	}
 
 	inputManager->AddListener(EventListener::Event::QUIT, this);
+	inputManager->AddListener(EventListener::Event::NUM1_KEY_DOWN, this);
 	inputManager->AddListener(EventListener::Event::W_KEY_DOWN, m_player);
 	inputManager->AddListener(EventListener::Event::A_KEY_DOWN, m_player);
 	inputManager->AddListener(EventListener::Event::S_KEY_DOWN, m_player);
@@ -137,9 +138,12 @@ void Game::update()
 													/*auto p = new std::vector<Tile *>();
 													m_graph->aStar(0, 45, p);*/
 	m_player->update(m_graph, m_vpWidth);
+
 	for (int i = 0; i < m_enemies.size(); i++) {
+		//m_enemies[i]->updatePath(m_graph, m_vpWidth, m_player->getIndexPos());
 		m_enemies[i]->update(m_graph, m_vpWidth);
 	}
+
 
 	if (deltaTime > SCREEN_TICKS_PER_FRAME + 3)
 	{
@@ -202,5 +206,11 @@ void Game::onEvent(EventListener::Event evt)
 	if (evt == EventListener::Event::QUIT)
 	{
 		m_quit = true;
+	}
+	else if(evt == EventListener::Event::NUM1_KEY_DOWN)
+	{
+		delete m_graph;
+		m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
+		initGraph();
 	}
 }

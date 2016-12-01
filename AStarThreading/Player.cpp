@@ -11,8 +11,6 @@ int Player::getIndexPos() const {
 }
 
 void Player::update(Graph<Tile*> * graph, int size) {
-	graph->player = m_indexPos;
-
 	if (m_keydowns[0] && graph->connectionExists(m_indexPos, m_indexPos - size)) {
 		m_indexPos -= size;
 		m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;

@@ -17,6 +17,7 @@ public:
 		A_KEY_UP,
 		S_KEY_UP,
 		D_KEY_UP,
+		NUM1_KEY_DOWN,
 		QUIT
 	};
 

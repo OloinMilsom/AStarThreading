@@ -46,8 +46,6 @@ private:
 	};
 
 public:
-
-	int player = 0;
 	// constructor / destructor
 	Graph(int size, float (*heuristicFunc) (NodeType, NodeType));
 	~Graph();
@@ -63,7 +61,7 @@ public:
 	bool addArc(int from, int to);
 	void removeArc(int from, int to);
 	bool connectionExists(int from, int to) const;
-	void aStar(int from, int to, std::vector<NodeType> * path, void (*processNode)(NodeType, float));
+	void aStar(int from, int to, std::vector<int> * path, void (*processNode)(NodeType, float));
 };
 
 #pragma region Constructors / Destructor
@@ -89,7 +87,7 @@ Graph<NodeType>::~Graph() {
 			delete m_nodes[i];
 		}
 	}
-	delete m_nodes;
+	m_nodes.clear();
 }
 
 #pragma endregion
@@ -128,6 +126,7 @@ bool Graph<NodeType>::addNode(NodeType val, int index) {
 	if (index >= 0 && index < m_maxNodes) {
 		if (m_nodes[index] == nullptr) {
 			m_nodes[index] = new Node(val);
+			m_nodes[index]->setIndex(index);
 			m_count++;
 			return true;
 		}
@@ -190,7 +189,7 @@ bool Graph<NodeType>::connectionExists(int from, int to) const {
 }
 
 template<typename NodeType>
-void Graph<NodeType>::aStar(int from, int to, std::vector<NodeType>* path, void(*processNode)(NodeType, float)) {
+void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*processNode)(NodeType, float)) {
 	/*function A*(start, goal)
     // The set of nodes already evaluated.
     closedSet := {}
@@ -309,7 +308,7 @@ function reconstruct_path(cameFrom, current)
 		}
 		while (openSetData[pathNode].prev != nullptr)
 		{
-			path->push_back(pathNode->getVal());
+			path->push_back(pathNode->getIndex());
 			pathNode = openSetData[pathNode].prev;
 		}
 	}

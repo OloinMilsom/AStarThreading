@@ -59,6 +59,9 @@ void InputManager::ProcessInput()
 			case SDLK_d:
 				Dispatch(EventListener::Event::D_KEY_DOWN);
 				break;
+			case SDLK_1:
+				Dispatch(EventListener::Event::NUM1_KEY_DOWN);
+				break;
 			}
 			break;
 
