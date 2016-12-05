@@ -10,8 +10,10 @@ Game::Game()
 	m_player = new Player;
 	m_quit = false;
 	m_vpWidth = 100;
-	m_noOfEnemies = 5;
+	m_noOfEnemies = 50;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
+	m_totalWalls = 6;
+	m_touchingWalls = 2;
 }
 
 Game::~Game()
@@ -22,15 +24,15 @@ Game::~Game()
 bool Game::init()
 {
 	srand(time(0));
-	Size winSize(1000, 1000);
+	m_screenSize = Size(1000, 1000);
 
 	//creates our renderer, which looks after drawing and the window
 	m_renderer = new Renderer();
-	m_renderer->init(winSize, "AStarThreading");
+	m_renderer->init(m_screenSize, "AStarThreading");
 
 	//set up the viewport
 	//we want the vp centred on origin and 20 units wide
-	float aspectRatio = winSize.w / winSize.h;
+	float aspectRatio = m_screenSize.w / m_screenSize.h;
 	Size vpSize(m_vpWidth, m_vpWidth / aspectRatio);
 	Vector2 vpBottomLeft(-vpSize.w / 2, -vpSize.h / 2);
 
@@ -40,15 +42,12 @@ bool Game::init()
 	lastTime = SDL_GetTicks();
 
 	initGraph();
-	for (int i = 0; i < m_noOfEnemies; i++) {
-		m_enemies.push_back(new Enemy(rand() % (m_vpWidth * m_vpWidth)));
-		if (m_graph->getNode(m_enemies[i]->getIndexPos())->getVal()->getIsWall()) {
-			m_enemies[i]->setIndexPos(m_enemies[i]->getIndexPos() + 1);
-		}
-	}
+	initEnemies();
 
 	inputManager->AddListener(EventListener::Event::QUIT, this);
 	inputManager->AddListener(EventListener::Event::NUM1_KEY_DOWN, this);
+	inputManager->AddListener(EventListener::Event::NUM2_KEY_DOWN, this);
+	inputManager->AddListener(EventListener::Event::NUM3_KEY_DOWN, this);
 	inputManager->AddListener(EventListener::Event::W_KEY_DOWN, m_player);
 	inputManager->AddListener(EventListener::Event::A_KEY_DOWN, m_player);
 	inputManager->AddListener(EventListener::Event::S_KEY_DOWN, m_player);
@@ -61,6 +60,22 @@ bool Game::init()
 	return true;
 }
 
+void Game::reinitialise()
+{
+	delete m_graph;
+	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
+
+	initGraph();
+	initEnemies();
+
+	float aspectRatio = m_screenSize.w / m_screenSize.h;
+	Size vpSize(m_vpWidth, m_vpWidth / aspectRatio);
+	Vector2 vpBottomLeft(-vpSize.w / 2, -vpSize.h / 2);
+
+	Rect vpRect(vpBottomLeft, vpSize);
+	m_renderer->setViewPort(vpRect);
+}
+
 bool Game::initGraph()
 {
 	int size = m_vpWidth;
@@ -69,24 +84,38 @@ bool Game::initGraph()
 	Colour light(245, 245, 220);
 	Colour grey(64, 64, 64);
 
-	std::vector<int> walls;
-	int touchingWalls = 1;
-	int totalWalls = 3;
-	//setup walls
-	for (int i = 0; i < totalWalls; i++) {
-		int x = (i + 1) * size / (totalWalls + 1);
-		int length = rand() % (size / 5) + (3 * size / 5);
-		if (rand() % 2 == 0) {
-			for (int j = 0; j < length; j++) {
-				walls.push_back(x + j * size);
-			}
-		}
-		else {
-			for (int j = size - length; j < size; j++) {
-				walls.push_back(x + j * size);
-			}
-		}
+	std::vector<bool> isTouching(m_totalWalls, false);
+	for (int i = 0; i < m_touchingWalls; i++)
+	{
+		isTouching[i] = true;
+	}
+	std::random_shuffle(isTouching.begin(), isTouching.end());
 
+	std::vector<int> walls;
+	//setup walls
+	for (int i = 0; i < m_totalWalls; i++) {
+		int x = (i + 1) * size / (m_totalWalls + 1);
+		if (isTouching[i]) {
+			int length = rand() % (size / 5) + (3 * size / 5);
+			if (rand() % 2 == 0) {
+				for (int j = 0; j < length; j++) {
+					walls.push_back(x + j * size);
+				}
+			}
+			else {
+				for (int j = size - length; j < size; j++) {
+					walls.push_back(x + j * size);
+				}
+			}
+		}
+		else
+		{
+			int length = rand() % (size / 5) + (2 * size / 5);
+			int start = rand() % (size / 5) + (size / 5);
+			for (int j = start; j < start + length; j++) {
+				walls.push_back(x + j * size);
+			}
+		}
 	}
 
 	for (int i = 0; i < size * size; i++) {
@@ -119,6 +148,24 @@ bool Game::initGraph()
 		}
 	}
 	return success;
+}
+
+bool Game::initEnemies()
+{
+	for (int i = 0; i < m_enemies.size(); i++)
+	{
+		delete m_enemies[i];
+	}
+	m_enemies.clear();
+
+	for (int i = 0; i < m_noOfEnemies; i++) {
+		m_enemies.push_back(new Enemy(rand() % (m_vpWidth * m_vpWidth)));
+		if (m_graph->getNode(m_enemies[i]->getIndexPos())->getVal()->getIsWall()) {
+			m_enemies[i]->setIndexPos(m_enemies[i]->getIndexPos() + 1);
+		}
+	}
+
+	return true;
 }
 
 
@@ -209,8 +256,26 @@ void Game::onEvent(EventListener::Event evt)
 	}
 	else if(evt == EventListener::Event::NUM1_KEY_DOWN)
 	{
-		delete m_graph;
-		m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
-		initGraph();
+		m_vpWidth = 30;
+		m_noOfEnemies = 5;
+		m_totalWalls = 3;
+		m_touchingWalls = 1;
+		reinitialise();
+	}
+	else if (evt == EventListener::Event::NUM2_KEY_DOWN)
+	{		
+		m_vpWidth = 100;
+		m_noOfEnemies = 50;
+		m_totalWalls = 6;
+		m_touchingWalls = 2;
+		reinitialise();
+	}
+	else if (evt == EventListener::Event::NUM3_KEY_DOWN)
+	{
+		m_vpWidth = 1000;
+		m_noOfEnemies = 500;
+		m_totalWalls = 18;
+		m_touchingWalls = 4;
+		reinitialise();
 	}
 }

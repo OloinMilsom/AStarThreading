@@ -21,16 +21,21 @@ private:
 
 	Graph<Tile *> * m_graph;
 	Player * m_player;
+	Size m_screenSize;
 	int m_noOfEnemies;
 	std::vector<Enemy *> m_enemies;
 	int m_vpWidth;
+	int m_totalWalls;
+	int m_touchingWalls;
 
 public:
 	Game();
 	~Game();
 
 	bool init();
+	void reinitialise();
 	bool initGraph();
+	bool initEnemies();
 	void destroy();
 
 	void update();

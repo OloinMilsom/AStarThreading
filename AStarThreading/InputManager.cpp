@@ -62,6 +62,12 @@ void InputManager::ProcessInput()
 			case SDLK_1:
 				Dispatch(EventListener::Event::NUM1_KEY_DOWN);
 				break;
+			case SDLK_2:
+				Dispatch(EventListener::Event::NUM2_KEY_DOWN);
+				break;
+			case SDLK_3:
+				Dispatch(EventListener::Event::NUM3_KEY_DOWN);
+				break;
 			}
 			break;
 

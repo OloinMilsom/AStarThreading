@@ -18,6 +18,8 @@ public:
 		S_KEY_UP,
 		D_KEY_UP,
 		NUM1_KEY_DOWN,
+		NUM2_KEY_DOWN,
+		NUM3_KEY_DOWN,
 		QUIT
 	};
 
