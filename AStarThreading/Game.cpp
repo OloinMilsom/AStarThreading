@@ -7,6 +7,7 @@ const int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 Game::Game()
 {
 	inputManager = new InputManager();
+	ThreadQueue::getInstance()->createWorkers();
 	m_player = new Player;
 	m_quit = false;
 	m_vpWidth = 100;
@@ -56,6 +57,11 @@ bool Game::init()
 	inputManager->AddListener(EventListener::Event::A_KEY_UP, m_player);
 	inputManager->AddListener(EventListener::Event::S_KEY_UP, m_player);
 	inputManager->AddListener(EventListener::Event::D_KEY_UP, m_player);
+
+	for (int i = 0; i < m_enemies.size(); i++) {
+		m_enemies[i]->updatePath(m_graph, m_vpWidth, m_player->getIndexPos());
+	}
+	//auto lambda = []() -> void { ThreadQueue::getInstance(); }; //this->m_enemies[0]->updatePath(this->m_graph, this->m_vpWidth, m_player->getIndexPos()); ThreadQueue::};
 
 	return true;
 }
@@ -195,7 +201,7 @@ void Game::update()
 	if (deltaTime > SCREEN_TICKS_PER_FRAME + 3)
 	{
 		deltaTime = 0;
-	}
+	} 
 }
 
 //** calls render on all game entities*/
@@ -206,7 +212,7 @@ void Game::render()
 	std::vector<GraphNode<Tile *> *> nodes = m_graph->getNodes();
 	for (int i = 0; i < m_graph->getCount(); i++) {
 		nodes[i]->getVal()->render(m_renderer);
-		nodes[i]->getVal()->resetColour();
+		//nodes[i]->getVal()->resetColour();
 	}
 
 	m_player->render(m_renderer);

@@ -1,5 +1,11 @@
 #include "Enemy.h"
 
+void pathFunc(void * val) {
+	// 0 = path
+	auto data = static_cast<std::tuple<Graph<Tile *> *, int, int, std::vector<int> * > *>(val);
+	std::get<0>(*data)->aStar(std::get<1>(*data), std::get<2>(*data), std::get<3>(*data), [](Tile * x, float y) { x->setColour(Colour(y, y, y)); });
+}
+
 Enemy::Enemy(int pos) 
 	:GameEntity(pos) {
 	m_path = new std::vector<int>();
@@ -21,5 +27,6 @@ void Enemy::render(Renderer * renderer) const {
 
 void Enemy::updatePath(Graph<Tile *> * graph, int size, int playerIndex) {
 	m_path->clear();
-	graph->aStar(m_indexPos, playerIndex, m_path, [](Tile * x, float y) { x->setColour(Colour(y, y, y)); });
+	auto data = std::make_tuple(graph, m_indexPos, playerIndex, m_path);
+	ThreadQueue::getInstance()->addJob(pathFunc, &data);
 }

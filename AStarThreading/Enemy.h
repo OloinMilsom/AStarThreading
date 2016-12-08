@@ -5,6 +5,8 @@
 #include "Tile.h"
 #include "GameEntity.h"
 #include<vector>
+#include "ThreadQueue.h"
+#include <tuple>
 
 class Enemy : public GameEntity {
 private:

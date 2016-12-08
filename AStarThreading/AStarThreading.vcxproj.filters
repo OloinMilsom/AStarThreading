@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Graph">
-      <UniqueIdentifier>{ced5231e-278a-41b0-b005-a07331997cdc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Graph">
       <UniqueIdentifier>{ecf88cdf-4066-434b-905b-eafa64006fec}</UniqueIdentifier>
     </Filter>
@@ -24,6 +21,12 @@
     </Filter>
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{0b082d6b-aa2b-49a7-a3fe-c16a8faabc77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Threading">
+      <UniqueIdentifier>{83839d98-dce5-42fb-8610-9e5a05070bfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{ced5231e-278a-41b0-b005-a07331997cdc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +53,9 @@
     </ClCompile>
     <ClCompile Include="Game.cpp">
       <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadQueue.cpp">
+      <Filter>Source Files\Threading</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -86,8 +92,8 @@
     <ClInclude Include="Enemy.h">
       <Filter>Header Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="my_priority_queue.h">
-      <Filter>Header Files\Graph</Filter>
+    <ClInclude Include="ThreadQueue.h">
+      <Filter>Header Files\Threading</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

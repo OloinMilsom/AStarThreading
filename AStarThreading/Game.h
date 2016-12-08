@@ -8,6 +8,7 @@
 #include "Enemy.h"
 #include <vector>
 #include <time.h>
+#include "ThreadQueue.h"
 
 /** The game objct whic manages the game loop*/
 class Game : public EventListener
