@@ -1,4 +1,5 @@
 #include "ThreadQueue.h"
+#include <iostream>
 
 ThreadQueue * ThreadQueue::m_instance = nullptr;
 
@@ -12,11 +13,14 @@ int ThreadQueue::worker(void * ptr)
 	srand(time(0));
 	while (true) {
 		SDL_LockMutex(m_instance->m_lock);
-		SDL_CondWait(m_instance->m_condition, m_instance->m_lock);
+		while (m_instance->m_jobQueue.empty()) {
+			SDL_CondWait(m_instance->m_condition, m_instance->m_lock);
+		}
 		std::pair<void(*)(void *), void *> job = m_instance->consumeJob();
 		SDL_UnlockMutex(m_instance->m_lock);
 
-		job.first(job.second);
+		job.first(job.second);		
+		//std::cout << SDL_GetThreadID(NULL) << std::endl;
 	}
 }
 
