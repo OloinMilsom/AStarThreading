@@ -30,6 +30,7 @@ bool Game::init()
 	//creates our renderer, which looks after drawing and the window
 	m_renderer = new Renderer();
 	m_renderer->init(m_screenSize, "AStarThreading");
+	m_renderer->setViewRect(Rect(0, 0, 1000, 1000));
 
 	//set up the viewport
 	//we want the vp centred on origin and 20 units wide
@@ -57,11 +58,6 @@ bool Game::init()
 	inputManager->AddListener(EventListener::Event::A_KEY_UP, m_player);
 	inputManager->AddListener(EventListener::Event::S_KEY_UP, m_player);
 	inputManager->AddListener(EventListener::Event::D_KEY_UP, m_player);
-
-	for (int i = 0; i < m_enemies.size(); i++) {
-		m_enemies[i]->updatePath(m_graph, m_vpWidth, m_player->getIndexPos());
-	}
-	//auto lambda = []() -> void { ThreadQueue::getInstance(); }; //this->m_enemies[0]->updatePath(this->m_graph, this->m_vpWidth, m_player->getIndexPos()); ThreadQueue::};
 
 	return true;
 }
@@ -193,7 +189,7 @@ void Game::update()
 	m_player->update(m_graph, m_vpWidth);
 
 	for (int i = 0; i < m_enemies.size(); i++) {
-		//m_enemies[i]->updatePath(m_graph, m_vpWidth, m_player->getIndexPos());
+		m_enemies[i]->updatePath(m_graph, m_vpWidth, m_player->getIndexPos());
 		m_enemies[i]->update(m_graph, m_vpWidth);
 	}
 

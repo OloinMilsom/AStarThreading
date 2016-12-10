@@ -35,8 +35,7 @@ GraphNode<NodeType>::GraphNode(NodeType val)
 }
 
 template<typename NodeType>
-GraphNode<NodeType>::~GraphNode()
-{
+GraphNode<NodeType>::~GraphNode() {
 	delete m_val;
 }
 

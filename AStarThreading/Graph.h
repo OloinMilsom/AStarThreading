@@ -221,6 +221,8 @@ void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*proc
 			openSetData[current].closed = true;
 			openSet.pop();
 
+			//processNode(current->getVal(), openSetData[current].gOfN);
+
 			// for all neighbours of current
 			std::list<Node *> neighbours = current->getConnections();
 			for (std::list<Node *>::iterator iter = neighbours.begin(); iter != neighbours.end(); iter++) {
@@ -256,10 +258,8 @@ void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*proc
 		while (openSetData[pathNode].prev != nullptr)
 		{
 			path->push_back(pathNode->getIndex());
-			processNode(pathNode->getVal(), openSetData[pathNode].gOfN);
 			pathNode = openSetData[pathNode].prev;
 		}
-		std::cout << "here" << std::endl;
 	}
 }
 

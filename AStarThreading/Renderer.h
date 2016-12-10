@@ -14,6 +14,7 @@ class Renderer {
 	//change these if you want to zoom or pan
 	Vector2 viewportBottomLeft;
 	Size viewportSize;
+	Rect m_viewRect;
 	SDL_Window *window;
 	SDL_Renderer *sdl_renderer;
 
@@ -31,5 +32,6 @@ public:
 	Vector2 worldToScreen(const Vector2&) const;
 	Rect worldToScreen(const Rect&) const;
 	void setViewPort(const Rect&);
+	void setViewRect(const Rect&);
 	Size getWindowSize() const;
 };

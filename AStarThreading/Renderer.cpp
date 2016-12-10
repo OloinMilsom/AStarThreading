@@ -52,10 +52,12 @@ bool Renderer::init(const Size& winSize, const char* title) {
 void Renderer::drawFillRect(const Rect& r, const Colour& c) const {
 	SDL_SetRenderDrawColor(sdl_renderer, c.r, c.g, c.b, c.a);
 	SDL_Rect sr;
-	sr.h = (int)r.size.h;
-	sr.w = (int)r.size.w;
-	sr.x = (int)r.pos.x;
-	sr.y = (int)r.pos.y;
+	float wScale = (windowSize.w / m_viewRect.size.w);
+	float hScale = (windowSize.h / m_viewRect.size.h);
+	sr.h = static_cast<int>(r.size.h * hScale);
+	sr.w = static_cast<int>(r.size.w * wScale);
+	sr.x = static_cast<int>((r.pos.x - m_viewRect.pos.x) * wScale);
+	sr.y = static_cast<int>((r.pos.y - m_viewRect.pos.y) * hScale);
 	SDL_RenderFillRect(sdl_renderer, &sr); //Portal uses SDL_RenderDrawRect /***
 }
 
@@ -63,10 +65,12 @@ void Renderer::drawFillRect(const Rect& r, const Colour& c) const {
 void Renderer::drawRect(const Rect& r, const Colour& c) const {
 	SDL_SetRenderDrawColor(sdl_renderer, c.r, c.g, c.b, c.a);
 	SDL_Rect sr;
-	sr.h = static_cast<int>(r.size.h);
-	sr.w = static_cast<int>(r.size.w);
-	sr.x = static_cast<int>(r.pos.x);
-	sr.y = static_cast<int>(r.pos.y);
+	float wScale = (windowSize.w / m_viewRect.size.w);
+	float hScale = (windowSize.h / m_viewRect.size.h);
+	sr.h = static_cast<int>(r.size.h * hScale);
+	sr.w = static_cast<int>(r.size.w * wScale);
+	sr.x = static_cast<int>((r.pos.x - m_viewRect.pos.x) * wScale);
+	sr.y = static_cast<int>((r.pos.y - m_viewRect.pos.y) * hScale);
 	SDL_RenderDrawRect(sdl_renderer, &sr); //Portal uses SDL_RenderDrawRect /***
 }
 
@@ -108,6 +112,10 @@ Rect Renderer::worldToScreen(const Rect &r) const {
 void Renderer::setViewPort(const Rect &r) {
 	viewportBottomLeft = r.pos;
 	viewportSize = r.size;
+}
+
+void Renderer::setViewRect(const Rect &rect) {
+	m_viewRect = rect;
 }
 
 Size Renderer::getWindowSize() const {

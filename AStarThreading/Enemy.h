@@ -10,7 +10,9 @@
 
 class Enemy : public GameEntity {
 private:
-	std::vector<int> * m_path; // 0 = w, 1 = a, 2 = s, 3 = d
+	std::vector<int> m_path;
+	std::vector<int> m_newPath;
+	bool m_newPathReady = false;
 
 public:
 	Enemy(int pos = 0);

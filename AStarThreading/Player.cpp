@@ -33,7 +33,7 @@ void Player::update(Graph<Tile*> * graph, int size) {
 
 void Player::render(Renderer * renderer) const
 {
-	renderer->drawWorldFillRect(Rect(m_worldPos, Size(0.5, 0.5)), Colour(0, 255, 0));
+	renderer->drawWorldFillRect(Rect(m_worldPos, Size(1.5, 1.5)), Colour(0, 255, 0));
 }
 
 void Player::onEvent(Event e) {
