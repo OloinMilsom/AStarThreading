@@ -50,28 +50,34 @@ bool Renderer::init(const Size& winSize, const char* title) {
 
 //draw a filled rect in pixel coordinates
 void Renderer::drawFillRect(const Rect& r, const Colour& c) const {
-	SDL_SetRenderDrawColor(sdl_renderer, c.r, c.g, c.b, c.a);
-	SDL_Rect sr;
-	float wScale = (windowSize.w / m_viewRect.size.w);
-	float hScale = (windowSize.h / m_viewRect.size.h);
-	sr.h = static_cast<int>(r.size.h * hScale);
-	sr.w = static_cast<int>(r.size.w * wScale);
-	sr.x = static_cast<int>((r.pos.x - m_viewRect.pos.x) * wScale);
-	sr.y = static_cast<int>((r.pos.y - m_viewRect.pos.y) * hScale);
-	SDL_RenderFillRect(sdl_renderer, &sr); //Portal uses SDL_RenderDrawRect /***
+	if (r.pos.x < m_viewRect.pos.x + m_viewRect.size.w && r.pos.x + r.size.w > m_viewRect.pos.x &&
+		r.pos.y < m_viewRect.pos.y + m_viewRect.size.h && r.pos.y + r.size.h > m_viewRect.pos.y) {
+		SDL_SetRenderDrawColor(sdl_renderer, c.r, c.g, c.b, c.a);
+		SDL_Rect sr;
+		float wScale = (windowSize.w / m_viewRect.size.w);
+		float hScale = (windowSize.h / m_viewRect.size.h);
+		sr.h = static_cast<int>(r.size.h * hScale);
+		sr.w = static_cast<int>(r.size.w * wScale);
+		sr.x = static_cast<int>((r.pos.x - m_viewRect.pos.x) * wScale);
+		sr.y = static_cast<int>((r.pos.y - m_viewRect.pos.y) * hScale);
+		SDL_RenderFillRect(sdl_renderer, &sr); //Portal uses SDL_RenderDrawRect /***
+	}
 }
 
 //draw a rect in pixel coordinates
 void Renderer::drawRect(const Rect& r, const Colour& c) const {
-	SDL_SetRenderDrawColor(sdl_renderer, c.r, c.g, c.b, c.a);
-	SDL_Rect sr;
-	float wScale = (windowSize.w / m_viewRect.size.w);
-	float hScale = (windowSize.h / m_viewRect.size.h);
-	sr.h = static_cast<int>(r.size.h * hScale);
-	sr.w = static_cast<int>(r.size.w * wScale);
-	sr.x = static_cast<int>((r.pos.x - m_viewRect.pos.x) * wScale);
-	sr.y = static_cast<int>((r.pos.y - m_viewRect.pos.y) * hScale);
-	SDL_RenderDrawRect(sdl_renderer, &sr); //Portal uses SDL_RenderDrawRect /***
+	if (r.pos.x < m_viewRect.pos.x + m_viewRect.size.w && r.pos.x + r.size.w > m_viewRect.pos.x &&
+		r.pos.y < m_viewRect.pos.y + m_viewRect.size.h && r.pos.y + r.size.h > m_viewRect.pos.y) {
+		SDL_SetRenderDrawColor(sdl_renderer, c.r, c.g, c.b, c.a);
+		SDL_Rect sr;
+		float wScale = (windowSize.w / m_viewRect.size.w);
+		float hScale = (windowSize.h / m_viewRect.size.h);
+		sr.h = static_cast<int>(r.size.h * hScale);
+		sr.w = static_cast<int>(r.size.w * wScale);
+		sr.x = static_cast<int>((r.pos.x - m_viewRect.pos.x) * wScale);
+		sr.y = static_cast<int>((r.pos.y - m_viewRect.pos.y) * hScale);
+		SDL_RenderDrawRect(sdl_renderer, &sr); //Portal uses SDL_RenderDrawRect /***
+	}
 }
 
 //draw a rect in world coordinates
