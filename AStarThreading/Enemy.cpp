@@ -1,28 +1,38 @@
 #include "Enemy.h"
 
-void pathFunc(void * val) {
-	// 0 = path
-	auto data = static_cast<std::tuple<Graph<Tile *> *, int, int, std::vector<int> *, bool *> *>(val);
-	std::get<0>(*data)->aStar(std::get<1>(*data), std::get<2>(*data), std::get<3>(*data), [](Tile * x, float y) { x->setColour(Colour(y, y, y)); });
-	*std::get<4>(*data) = true;
+void Enemy::pathFunc(void * val) {
+	// cast data
+	auto data = static_cast<std::tuple<Enemy *, Graph<Tile *> *, int> *>(val);
+	// wait until signal to recalculate
+	SDL_SemWait(std::get<0>(*data)->m_sem);
+	// do A*
+	std::get<1>(*data)->aStar(std::get<0>(*data)->m_indexPos, std::get<2>(*data), &std::get<0>(*data)->m_path, [](Tile * x, float y) { x->setColour(Colour(0, 0, y)); });
+	// notify enemy a new path is ready
+	std::get<0>(*data)->m_recalculating = false;
+	std::get<0>(*data)->m_funcComplete = true;
+
 	delete data;
 }
 
 Enemy::Enemy(int pos) 
-	:GameEntity(pos) {
+	:GameEntity(pos),
+	 m_sem(SDL_CreateSemaphore(0)){
 	m_path = std::vector<int>();
-	m_newPath = std::vector<int>();
-	m_newPathReady = true;
+	m_funcComplete = true;
 }
 
 int Enemy::getIndexPos() const {
 	return m_indexPos;
 }
 
-void Enemy::update(Graph<Tile*> * graph, int size) {	
+void Enemy::update(Graph<Tile*> * graph, int size) {
 	if (!m_path.empty()) {
 		m_indexPos = m_path.back();
 		m_path.pop_back();
+	}
+	else if (!m_recalculating) {
+		m_recalculating = true;
+		SDL_SemPost(m_sem);
 	}
 	m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
 }
@@ -32,11 +42,9 @@ void Enemy::render(Renderer * renderer) const {
 }
 
 void Enemy::updatePath(Graph<Tile *> * graph, int size, int playerIndex) {
-	if (m_newPathReady) {
-		m_path = m_newPath;
-		m_newPathReady = false;
-		m_newPath.clear();
-		auto data = new std::tuple<Graph<Tile *> *, int, int, std::vector<int> *, bool *>(graph, m_indexPos, playerIndex, &m_newPath, &m_newPathReady);
+	if (m_funcComplete) {
+		m_funcComplete = false;
+		auto data = new std::tuple<Enemy *, Graph<Tile *> *, int>(this, graph, playerIndex);
 		ThreadQueue::getInstance()->addJob(pathFunc, data);
 	}
 }

@@ -13,7 +13,7 @@ private:
 	static ThreadQueue * m_instance;
 	static int worker(void * ptr);
 	SDL_mutex * m_lock;
-	SDL_cond * m_condition;
+	SDL_sem * m_sem;
 	std::queue<std::pair<void (*)(void *), void *>> m_jobQueue;
 	std::vector<SDL_Thread*> m_workerPool;
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "SDL.h"
 #include "GraphNode.h"
 #include <iostream>
 #include <algorithm>
@@ -9,7 +10,6 @@
 
 template<typename NodeType> class Graph {
 private:
-	
 
 	// typedef for simplicity
 	typedef GraphNode<NodeType> Node;
@@ -26,6 +26,9 @@ private:
 	// the actual number of nodes in the graph
 	int m_count;
 
+	// mutex enures A* is thread safe
+	SDL_mutex * m_lock;
+
 	// aStar Node struct so algorithm can store g(n) and f(n)
 	struct AStarData {
 	public:
@@ -35,13 +38,6 @@ private:
 		float hOfN;
 		bool open;
 		bool closed;
-	};
-
-	struct CompareNodes {
-	public:
-		bool operator()(std::pair<Node *, AStarData> n1, std::pair<Node *, AStarData> n2) { 
-			return (n1.second.gOfN + n1.second.hOfN) > (n2.second.gOfN + n2.second.hOfN); 
-		}
 	};
 
 public:
@@ -70,7 +66,8 @@ template<typename NodeType>
 Graph<NodeType>::Graph(int size, float (*heuristicFunc) (NodeType, NodeType))
 	:m_maxNodes(size),
 	 m_heuristicFunc(heuristicFunc),
-	 m_count(0) {
+	 m_count(0),
+	 m_lock(SDL_CreateMutex()){
 	// create all nodes and clear it to nullptr
 	m_nodes = std::vector<Node *>(m_maxNodes);
 	for (int i = 0; i < m_maxNodes; i++) {
@@ -124,9 +121,11 @@ template<typename NodeType>
 bool Graph<NodeType>::addNode(NodeType val, int index) {
 	if (index >= 0 && index < m_maxNodes) {
 		if (m_nodes[index] == nullptr) {
+			SDL_LockMutex(m_lock);
 			m_nodes[index] = new Node(val);
 			m_nodes[index]->setIndex(index);
 			m_count++;
+			SDL_UnlockMutex(m_lock);
 			return true;
 		}
 	}
@@ -138,6 +137,7 @@ template<typename NodeType>
 void Graph<NodeType>::removeNode(int index) {
 	if (index >= 0 && index < m_maxNodes) {
 		if (m_nodes[index] != nullptr) {
+			SDL_LockMutex(m_lock);
 			// remove all connections to node at given index
 			for (int i = 0; i < m_maxNodes; i++) {
 				if (m_nodes[i] != nullptr) {
@@ -148,6 +148,7 @@ void Graph<NodeType>::removeNode(int index) {
 			delete m_nodes[index];
 			m_nodes[index] = nullptr;
 			count--;
+			SDL_UnlockMutex(m_lock);
 		}
 	}
 }
@@ -159,7 +160,9 @@ bool Graph<NodeType>::addArc(int from, int to) {
 	if (from >= 0 && to >= 0 && from < m_maxNodes && to < m_maxNodes) {
 		if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
 			if (!m_nodes[from]->hasConnection(m_nodes[to])) {
+				SDL_LockMutex(m_lock);
 				m_nodes[from]->addConnection(m_nodes[to]);
+				SDL_UnlockMutex(m_lock);
 				return true;
 			}
 		}
@@ -172,7 +175,9 @@ template<typename NodeType>
 void Graph<NodeType>::removeArc(int from, int to) {
 	if (from >= 0 && to >= 0 && from < m_maxNodes && to < m_maxNodes) {
 		if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
+			SDL_LockMutex(m_lock);
 			m_nodes[from]->removeConnection(m_nodes[to]);
+			SDL_UnlockMutex(m_lock);
 		}
 	}
 }
@@ -189,8 +194,13 @@ bool Graph<NodeType>::connectionExists(int from, int to) const {
 
 template<typename NodeType>
 void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*processNode)(NodeType, float)) const {
+	SDL_LockMutex(m_lock);
+	Node * fromNode = m_nodes[from];
+	Node * toNode = m_nodes[to];
+	SDL_UnlockMutex(m_lock);
+	
 	// check the nodes exist
-	if (m_nodes[from] != nullptr && m_nodes[to] != nullptr) {
+	if (fromNode != nullptr && toNode != nullptr) {
 		// initialise open and closed lists
 		std::map<Node *, AStarData> openSetData;
 		auto comp = [&openSetData](Node * n1, Node * n2) { 
@@ -200,10 +210,10 @@ void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*proc
 		std::priority_queue < Node *, std::vector<Node *>, decltype(comp)> openSet(comp);
 		//std::vector<Node *> openSet;
 		
-		NodeType finalVal = m_nodes[to]->getVal();
+		NodeType finalVal = toNode->getVal();
 		Node * pathNode;
-		Node * startNode = m_nodes[from];
-		AStarData startData = { nullptr, 0, m_heuristicFunc(m_nodes[from]->getVal(), finalVal) };
+		Node * startNode = fromNode;
+		AStarData startData = { nullptr, 0, m_heuristicFunc(fromNode->getVal(), finalVal) };
 		openSetData[startNode] = startData;
 		openSet.push(startNode);
 
@@ -212,7 +222,7 @@ void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*proc
 			//std::sort(openSet.begin(), openSet.end(), comp);
 
 			Node * current = openSet.top();
-			if (current == m_nodes[to])
+			if (current == toNode)
 			{
 				pathNode = current;
 				break;
@@ -258,9 +268,11 @@ void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*proc
 		while (openSetData[pathNode].prev != nullptr)
 		{
 			path->push_back(pathNode->getIndex());
+			processNode(pathNode->getVal(), openSetData[pathNode].gOfN);
 			pathNode = openSetData[pathNode].prev;
 		}
 	}
+	//SDL_UnlockMutex(m_lock);
 }
 
 #pragma endregion

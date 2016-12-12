@@ -3,7 +3,7 @@
 
 ThreadQueue * ThreadQueue::m_instance = nullptr;
 
-ThreadQueue::ThreadQueue() :m_condition(SDL_CreateCond()), m_lock(SDL_CreateMutex())
+ThreadQueue::ThreadQueue() :m_sem(SDL_CreateSemaphore(0)), m_lock(SDL_CreateMutex())
 {
 
 }
@@ -12,15 +12,11 @@ int ThreadQueue::worker(void * ptr)
 {
 	srand(time(0));
 	while (true) {
-		SDL_LockMutex(m_instance->m_lock);
-		while (m_instance->m_jobQueue.empty()) {
-			SDL_CondWait(m_instance->m_condition, m_instance->m_lock);
-		}
-		std::pair<void(*)(void *), void *> job = m_instance->consumeJob();
-		SDL_UnlockMutex(m_instance->m_lock);
+		SDL_SemWait(m_instance->m_sem);
 
-		job.first(job.second);		
-		//std::cout << SDL_GetThreadID(NULL) << std::endl;
+		std::pair<void(*)(void *), void *> job = m_instance->consumeJob();
+
+		job.first(job.second);
 	}
 }
 
@@ -55,5 +51,5 @@ void ThreadQueue::addJob(void(*f)(void * x), void * x)
 	SDL_LockMutex(m_lock);
 	m_jobQueue.push(std::make_pair(f, x));
 	SDL_UnlockMutex(m_lock);
-	SDL_CondSignal(m_condition);
+	SDL_SemPost(m_sem);
 }

@@ -11,8 +11,10 @@
 class Enemy : public GameEntity {
 private:
 	std::vector<int> m_path;
-	std::vector<int> m_newPath;
-	bool m_newPathReady = false;
+	SDL_sem * m_sem;
+	bool m_recalculating;
+	bool m_funcComplete;
+	static void pathFunc(void * val);
 
 public:
 	Enemy(int pos = 0);

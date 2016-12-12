@@ -10,7 +10,7 @@ Game::Game()
 	ThreadQueue::getInstance()->createWorkers();
 	m_player = new Player;
 	m_quit = false;
-	m_vpWidth = 1000;
+	m_vpWidth = 100;
 	m_noOfEnemies = 50;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 	m_totalWalls = 6;
@@ -30,7 +30,7 @@ bool Game::init()
 	//creates our renderer, which looks after drawing and the window
 	m_renderer = new Renderer();
 	m_renderer->init(m_screenSize, "AStarThreading");
-	m_renderer->setViewRect(Rect(0, 0, 100, 100));
+	m_renderer->setViewRect(Rect(0, 0, 1000, 1000));
 
 	//set up the viewport
 	//we want the vp centred on origin and 20 units wide
