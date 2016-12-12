@@ -3,21 +3,21 @@
 
 ThreadQueue * ThreadQueue::m_instance = nullptr;
 
-ThreadQueue::ThreadQueue() :m_sem(SDL_CreateSemaphore(0)), m_lock(SDL_CreateMutex())
-{
+ThreadQueue::ThreadQueue() :m_sem(SDL_CreateSemaphore(0)), m_lock(SDL_CreateMutex()) {
 
 }
 
 int ThreadQueue::worker(void * ptr)
 {
 	srand(time(0));
-	while (true) {
+	while (m_instance->m_workersOpen) {
 		SDL_SemWait(m_instance->m_sem);
 
 		std::pair<void(*)(void *), void *> job = m_instance->consumeJob();
 
 		job.first(job.second);
 	}
+	return 0;
 }
 
 ThreadQueue * ThreadQueue::getInstance() {
@@ -30,6 +30,7 @@ ThreadQueue * ThreadQueue::getInstance() {
 void ThreadQueue::createWorkers()
 {
 	int numWorkers = std::thread::hardware_concurrency() - 1;
+	m_workersOpen = true;
 
 	for (int i = 0; i < numWorkers; i++)
 	{
@@ -52,4 +53,8 @@ void ThreadQueue::addJob(void(*f)(void * x), void * x)
 	m_jobQueue.push(std::make_pair(f, x));
 	SDL_UnlockMutex(m_lock);
 	SDL_SemPost(m_sem);
+}
+
+void ThreadQueue::stop() {
+
 }

@@ -29,6 +29,9 @@ private:
 	// mutex enures A* is thread safe
 	SDL_mutex * m_lock;
 
+	// mutex enures A* is thread safe
+	SDL_sem * m_deleteSem;
+
 	// aStar Node struct so algorithm can store g(n) and f(n)
 	struct AStarData {
 	public:
@@ -67,7 +70,8 @@ Graph<NodeType>::Graph(int size, float (*heuristicFunc) (NodeType, NodeType))
 	:m_maxNodes(size),
 	 m_heuristicFunc(heuristicFunc),
 	 m_count(0),
-	 m_lock(SDL_CreateMutex()){
+	 m_lock(SDL_CreateMutex()),
+	 m_deleteSem(SDL_CreateSemaphore(0)){
 	// create all nodes and clear it to nullptr
 	m_nodes = std::vector<Node *>(m_maxNodes);
 	for (int i = 0; i < m_maxNodes; i++) {

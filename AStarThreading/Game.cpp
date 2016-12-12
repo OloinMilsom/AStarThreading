@@ -64,6 +64,7 @@ bool Game::init()
 
 void Game::reinitialise()
 {
+	ThreadQueue::getInstance()->stop();
 	delete m_graph;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 

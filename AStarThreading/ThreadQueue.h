@@ -12,6 +12,7 @@ private:
 	ThreadQueue();
 	static ThreadQueue * m_instance;
 	static int worker(void * ptr);
+	bool m_workersOpen;
 	SDL_mutex * m_lock;
 	SDL_sem * m_sem;
 	std::queue<std::pair<void (*)(void *), void *>> m_jobQueue;
@@ -22,5 +23,6 @@ public:
 	void createWorkers();
 	std::pair<void(*)(void *), void *> consumeJob();
 	void addJob(void (*f)(void * x), void * x);
+	void stop();
 };
 
