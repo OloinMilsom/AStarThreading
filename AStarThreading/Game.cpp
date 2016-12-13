@@ -64,10 +64,6 @@ bool Game::init()
 
 void Game::reinitialise()
 {
-	for (int i = 0; i < m_enemies.size(); i++)
-	{
-		SDL_SemPost(m_enemies[i]->getSem());
-	}
 	ThreadQueue::getInstance()->stop();
 	delete m_graph;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
@@ -81,6 +77,9 @@ void Game::reinitialise()
 
 	Rect vpRect(vpBottomLeft, vpSize);
 	m_renderer->setViewPort(vpRect);
+
+	ThreadQueue::getInstance()->reset();
+	ThreadQueue::getInstance()->start();
 }
 
 bool Game::initGraph()
@@ -263,21 +262,19 @@ void Game::onEvent(EventListener::Event evt)
 	}
 	else if(evt == EventListener::Event::NUM1_KEY_DOWN)
 	{
-		//m_vpWidth = 30;
-		//m_noOfEnemies = 5;
-		//m_totalWalls = 3;
-		//m_touchingWalls = 1;
-		//reinitialise();
-		ThreadQueue::getInstance()->stop();
+		m_vpWidth = 30;
+		m_noOfEnemies = 5;
+		m_totalWalls = 3;
+		m_touchingWalls = 1;
+		reinitialise();
 	}
 	else if (evt == EventListener::Event::NUM2_KEY_DOWN)
 	{		
-		/*m_vpWidth = 100;
+		m_vpWidth = 100;
 		m_noOfEnemies = 50;
 		m_totalWalls = 6;
 		m_touchingWalls = 2;
-		reinitialise();*/
-		ThreadQueue::getInstance()->start();
+		reinitialise();
 	}
 	else if (evt == EventListener::Event::NUM3_KEY_DOWN)
 	{

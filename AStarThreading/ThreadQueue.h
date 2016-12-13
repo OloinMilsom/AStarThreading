@@ -26,5 +26,6 @@ public:
 	void addJob(void (*f)(void * x), void * x);
 	void stop();
 	void start();
+	bool reset();
 };
 

@@ -19,6 +19,7 @@ private:
 	std::tuple<Graph<Tile *> *, int> m_threadData;
 public:
 	Enemy(int pos = 0);
+	~Enemy();
 	int getIndexPos() const;
 	SDL_sem * getSem() const;
 	void update(Graph<Tile *> * graph, int size);

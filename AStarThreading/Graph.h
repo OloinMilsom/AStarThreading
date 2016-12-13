@@ -29,7 +29,7 @@ private:
 	// mutex enures A* is thread safe
 	SDL_mutex * m_lock;
 
-	// mutex enures A* is thread safe
+	// semaphore ensures delete is thread safe
 	SDL_sem * m_deleteSem;
 
 	// aStar Node struct so algorithm can store g(n) and f(n)
@@ -59,7 +59,7 @@ public:
 	bool addArc(int from, int to);
 	void removeArc(int from, int to);
 	bool connectionExists(int from, int to) const;
-	void aStar(int from, int to, std::vector<int> * path, void (*processNode)(NodeType, float)) const;
+	void aStar(int from, int to, std::vector<int> * path, void (*processNode)(NodeType, float), SDL_mutex * pathLock) const;
 };
 
 #pragma region Constructors / Destructor
@@ -71,7 +71,7 @@ Graph<NodeType>::Graph(int size, float (*heuristicFunc) (NodeType, NodeType))
 	 m_heuristicFunc(heuristicFunc),
 	 m_count(0),
 	 m_lock(SDL_CreateMutex()),
-	 m_deleteSem(SDL_CreateSemaphore(0)){
+	 m_deleteSem(SDL_CreateSemaphore(0)) {
 	// create all nodes and clear it to nullptr
 	m_nodes = std::vector<Node *>(m_maxNodes);
 	for (int i = 0; i < m_maxNodes; i++) {
@@ -82,12 +82,17 @@ Graph<NodeType>::Graph(int size, float (*heuristicFunc) (NodeType, NodeType))
 // destructor
 template<typename NodeType>
 Graph<NodeType>::~Graph() {
+	while (SDL_SemValue(m_deleteSem) != 0);
+	SDL_LockMutex(m_lock);
 	for (int i = 0; i < m_maxNodes; i++) {
 		if (m_nodes[i] != nullptr) {
 			delete m_nodes[i];
 		}
 	}
 	m_nodes.clear();
+	SDL_UnlockMutex(m_lock);
+	SDL_DestroyMutex(m_lock);
+	SDL_DestroySemaphore(m_deleteSem);
 }
 
 #pragma endregion
@@ -197,7 +202,8 @@ bool Graph<NodeType>::connectionExists(int from, int to) const {
 }
 
 template<typename NodeType>
-void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*processNode)(NodeType, float)) const {
+void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*processNode)(NodeType, float), SDL_mutex * pathLock) const {
+	SDL_SemPost(m_deleteSem);
 	SDL_LockMutex(m_lock);
 	Node * fromNode = m_nodes[from];
 	Node * toNode = m_nodes[to];
@@ -269,14 +275,16 @@ void Graph<NodeType>::aStar(int from, int to, std::vector<int>* path, void(*proc
 				}
 			}
 		}
+		SDL_LockMutex(pathLock);
 		while (openSetData[pathNode].prev != nullptr)
 		{
 			path->push_back(pathNode->getIndex());
 			processNode(pathNode->getVal(), openSetData[pathNode].gOfN);
 			pathNode = openSetData[pathNode].prev;
 		}
+		SDL_UnlockMutex(pathLock);
 	}
-	//SDL_UnlockMutex(m_lock);
+	SDL_SemWait(m_deleteSem);
 }
 
 #pragma endregion

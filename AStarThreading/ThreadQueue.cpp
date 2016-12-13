@@ -70,3 +70,19 @@ void ThreadQueue::start() {
 	// start all worker threads
 	SDL_SemPost(m_stopSem);
 }
+
+bool ThreadQueue::reset()
+{
+	if (SDL_SemValue(m_stopSem) == 0) {
+		SDL_LockMutex(m_lock);
+		while (!m_jobQueue.empty()) {
+			SDL_SemWait(m_instance->m_sem);
+			m_jobQueue.pop();
+		}
+		SDL_UnlockMutex(m_lock);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
