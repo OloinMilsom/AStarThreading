@@ -15,6 +15,7 @@ private:
 	bool m_workersOpen;
 	SDL_mutex * m_lock;
 	SDL_sem * m_sem;
+	SDL_sem * m_stopSem;
 	std::queue<std::pair<void (*)(void *), void *>> m_jobQueue;
 	std::vector<SDL_Thread*> m_workerPool;
 
@@ -24,5 +25,6 @@ public:
 	std::pair<void(*)(void *), void *> consumeJob();
 	void addJob(void (*f)(void * x), void * x);
 	void stop();
+	void start();
 };
 

@@ -2,27 +2,31 @@
 
 void Enemy::pathFunc(void * val) {
 	// cast data
-	auto data = static_cast<std::tuple<Enemy *, Graph<Tile *> *, int> *>(val);
+	auto enemy = static_cast<Enemy *>(val);
 	// wait until signal to recalculate
-	SDL_SemWait(std::get<0>(*data)->m_sem);
+	SDL_SemWait(enemy->m_sem);
 	// do A*
-	std::get<1>(*data)->aStar(std::get<0>(*data)->m_indexPos, std::get<2>(*data), &std::get<0>(*data)->m_path, [](Tile * x, float y) { x->setColour(Colour(0, 0, y)); });
-	// notify enemy a new path is ready
-	std::get<0>(*data)->m_recalculating = false;
-	std::get<0>(*data)->m_funcComplete = true;
 
-	delete data;
+	std::get<0>(enemy->m_threadData)->aStar(enemy->m_indexPos, std::get<1>(enemy->m_threadData), &enemy->m_path, [](Tile * x, float y) { x->setColour(Colour(0, 0, y)); });
+	// notify enemy a new path is ready
+	enemy->m_recalculating = false;
+	enemy->m_funcComplete = true;
 }
 
 Enemy::Enemy(int pos) 
 	:GameEntity(pos),
-	 m_sem(SDL_CreateSemaphore(0)){
+	 m_sem(SDL_CreateSemaphore(0)),
+	 m_lock(SDL_CreateMutex()){
 	m_path = std::vector<int>();
 	m_funcComplete = true;
 }
 
 int Enemy::getIndexPos() const {
 	return m_indexPos;
+}
+
+SDL_sem * Enemy::getSem() const {
+	return m_sem;
 }
 
 void Enemy::update(Graph<Tile*> * graph, int size) {
@@ -44,7 +48,7 @@ void Enemy::render(Renderer * renderer) const {
 void Enemy::updatePath(Graph<Tile *> * graph, int size, int playerIndex) {
 	if (m_funcComplete) {
 		m_funcComplete = false;
-		auto data = new std::tuple<Enemy *, Graph<Tile *> *, int>(this, graph, playerIndex);
-		ThreadQueue::getInstance()->addJob(pathFunc, data);
+		m_threadData = std::tuple<Graph<Tile *> *, int>(graph, playerIndex);
+		ThreadQueue::getInstance()->addJob(pathFunc, this);
 	}
 }

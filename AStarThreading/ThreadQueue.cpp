@@ -3,7 +3,7 @@
 
 ThreadQueue * ThreadQueue::m_instance = nullptr;
 
-ThreadQueue::ThreadQueue() :m_sem(SDL_CreateSemaphore(0)), m_lock(SDL_CreateMutex()) {
+ThreadQueue::ThreadQueue() :m_sem(SDL_CreateSemaphore(0)), m_stopSem(SDL_CreateSemaphore(1)), m_lock(SDL_CreateMutex()) {
 
 }
 
@@ -11,6 +11,12 @@ int ThreadQueue::worker(void * ptr)
 {
 	srand(time(0));
 	while (m_instance->m_workersOpen) {
+		// normally this semaphore operation should do nothing if undisturbed
+		// however elsewhere the semaphore can be used to stop this from operating normally
+		// thus this semaphore can be used to stop all worker threads and restart them
+		SDL_SemWait(m_instance->m_stopSem);
+		SDL_SemPost(m_instance->m_stopSem);
+
 		SDL_SemWait(m_instance->m_sem);
 
 		std::pair<void(*)(void *), void *> job = m_instance->consumeJob();
@@ -56,5 +62,11 @@ void ThreadQueue::addJob(void(*f)(void * x), void * x)
 }
 
 void ThreadQueue::stop() {
+	// stop all worker threads
+	SDL_SemWait(m_stopSem);
+}
 
+void ThreadQueue::start() {
+	// start all worker threads
+	SDL_SemPost(m_stopSem);
 }
