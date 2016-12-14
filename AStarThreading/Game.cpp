@@ -65,6 +65,12 @@ bool Game::init()
 void Game::reinitialise()
 {
 	ThreadQueue::getInstance()->stop();
+
+	for (int i = 0; i < m_enemies.size(); i++)
+	{
+		delete m_enemies[i];
+	}
+	m_enemies.clear();
 	delete m_graph;
 	m_graph = new Graph<Tile *>(m_vpWidth * m_vpWidth, &Tile::manhattanDistance);
 
@@ -158,12 +164,11 @@ bool Game::initGraph()
 
 bool Game::initEnemies()
 {
-	for (int i = 0; i < m_enemies.size(); i++)
-	{
-		delete m_enemies[i];
-	}
-	m_enemies.clear();
-
+	//for (int i = 0; i < m_enemies.size(); i++)
+	//{
+	//	delete m_enemies[i];
+	//}
+	//m_enemies.clear();
 	for (int i = 0; i < m_noOfEnemies; i++) {
 		m_enemies.push_back(new Enemy(rand() % (m_vpWidth * m_vpWidth)));
 		if (m_graph->getNode(m_enemies[i]->getIndexPos())->getVal()->getIsWall()) {

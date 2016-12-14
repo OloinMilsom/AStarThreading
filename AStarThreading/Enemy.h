@@ -12,6 +12,7 @@ class Enemy : public GameEntity {
 private:
 	std::vector<int> m_path;
 	SDL_sem * m_sem;
+	SDL_sem * m_deleteSem;
 	SDL_mutex * m_lock;
 	bool m_recalculating;
 	bool m_funcComplete;

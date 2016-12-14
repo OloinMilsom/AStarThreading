@@ -1,11 +1,15 @@
 #include "Enemy.h"
 
-void Enemy::pathFunc(void * val) {
+void Enemy::pathFunc(void * val) {	
 	// cast data
 	auto enemy = static_cast<Enemy *>(val);
+	
+	SDL_SemWait(enemy->m_deleteSem);
+
 	// wait until signal to recalculate
 	SDL_SemWait(enemy->m_sem);
-	// do A*
+
+	std::cout << "started AStar" << std::endl;
 
 	std::get<0>(enemy->m_threadData)->aStar(enemy->m_indexPos, std::get<1>(enemy->m_threadData), &enemy->m_path, [](Tile * x, float y) { x->setColour(Colour(0, 0, y)); }, enemy->m_lock);
 	// notify enemy a new path is ready
@@ -14,17 +18,22 @@ void Enemy::pathFunc(void * val) {
 	enemy->m_recalculating = false;
 	enemy->m_funcComplete = true;
 	SDL_UnlockMutex(enemy->m_lock);
+
+	SDL_SemPost(enemy->m_deleteSem);
 }
 
 Enemy::Enemy(int pos) 
 	:GameEntity(pos),
 	 m_sem(SDL_CreateSemaphore(0)),
+	 m_deleteSem(SDL_CreateSemaphore(1)),
 	 m_lock(SDL_CreateMutex()) {
 	m_path = std::vector<int>();
 	m_funcComplete = true;
 }
 
 Enemy::~Enemy() {
+	SDL_SemPost(m_sem);
+	SDL_SemWait(m_deleteSem);
 	SDL_DestroyMutex(m_lock);
 	SDL_DestroySemaphore(m_sem);
 }
