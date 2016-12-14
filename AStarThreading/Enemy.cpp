@@ -9,8 +9,6 @@ void Enemy::pathFunc(void * val) {
 	// wait until signal to recalculate
 	SDL_SemWait(enemy->m_sem);
 
-	std::cout << "started AStar" << std::endl;
-
 	std::get<0>(enemy->m_threadData)->aStar(enemy->m_indexPos, std::get<1>(enemy->m_threadData), &enemy->m_path, [](Tile * x, float y) { x->setColour(Colour(0, 0, y)); }, enemy->m_lock);
 	// notify enemy a new path is ready
 

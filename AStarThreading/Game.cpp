@@ -76,6 +76,7 @@ void Game::reinitialise()
 
 	initGraph();
 	initEnemies();
+	m_player->setIndexPos(0);
 
 	float aspectRatio = m_screenSize.w / m_screenSize.h;
 	Size vpSize(m_vpWidth, m_vpWidth / aspectRatio);

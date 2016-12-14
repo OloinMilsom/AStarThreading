@@ -14,14 +14,10 @@ int ThreadQueue::worker(void * ptr)
 		// normally this semaphore operation should do nothing if undisturbed
 		// however elsewhere the semaphore can be used to stop this from operating normally
 		// thus this semaphore can be used to stop all worker threads and restart them
-		std::cout << "stopped" << std::endl;
 		SDL_SemWait(m_instance->m_stopSem);
-		std::cout << "started" << std::endl;
 		SDL_SemPost(m_instance->m_stopSem);
 
 		SDL_SemWait(m_instance->m_sem);
-
-		std::cout << "job started" << std::endl;
 
 		std::pair<void(*)(void *), void *> job = m_instance->consumeJob();
 
@@ -63,7 +59,6 @@ void ThreadQueue::addJob(void(*f)(void * x), void * x)
 	m_jobQueue.push(std::make_pair(f, x));
 	SDL_UnlockMutex(m_lock);
 	SDL_SemPost(m_sem);
-	std::cout << "job added" << std::endl;
 }
 
 void ThreadQueue::stop() {
@@ -85,7 +80,6 @@ bool ThreadQueue::reset()
 			m_jobQueue.pop();
 		}
 		SDL_UnlockMutex(m_lock);
-		std::cout << "reset" << std::endl;
 		return true;
 	}
 	else {
