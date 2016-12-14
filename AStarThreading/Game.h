@@ -35,6 +35,7 @@ public:
 
 	bool init();
 	void reinitialise();
+	void randomiseConditions();
 	bool initGraph();
 	bool initEnemies();
 	void destroy();

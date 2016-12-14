@@ -11,23 +11,22 @@ int Player::getIndexPos() const {
 }
 
 void Player::update(Graph<Tile*> * graph, int size) {
-	if (m_keydowns[0] && graph->connectionExists(m_indexPos, m_indexPos - size)) {
+	int dir = rand() % 32; // one in 8 chance of moving, upon moving one in four to move in a specific direction
+	if ((m_keydowns[0] || dir == 0) && graph->connectionExists(m_indexPos, m_indexPos - size)) {
 		m_indexPos -= size;
 		m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
 	}
-	if (m_keydowns[1] && graph->connectionExists(m_indexPos, m_indexPos - 1)) {
+	if ((m_keydowns[1] || dir == 1) && graph->connectionExists(m_indexPos, m_indexPos - 1)) {
 		m_indexPos -= 1;
 		m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
 	}
-	if (m_keydowns[2] && graph->connectionExists(m_indexPos, m_indexPos + size)) {
+	if ((m_keydowns[2] || dir == 2) && graph->connectionExists(m_indexPos, m_indexPos + size)) {
 		m_indexPos += size;
 		m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
 	}
-	if (m_keydowns[3]) {
-		if (graph->connectionExists(m_indexPos, m_indexPos + 1)) {
+	if ((m_keydowns[3] || dir == 3) && graph->connectionExists(m_indexPos, m_indexPos + 1)) {
 			m_indexPos += 1;
 			m_worldPos = graph->getNode(m_indexPos)->getVal()->getRect().pos;
-		}
 	}
 }
 

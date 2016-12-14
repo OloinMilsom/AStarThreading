@@ -20,8 +20,9 @@ void Enemy::pathFunc(void * val) {
 	SDL_SemPost(enemy->m_deleteSem);
 }
 
-Enemy::Enemy(int pos) 
+Enemy::Enemy(int pos)
 	:GameEntity(pos),
+	 m_isAlive(true),
 	 m_sem(SDL_CreateSemaphore(0)),
 	 m_deleteSem(SDL_CreateSemaphore(1)),
 	 m_lock(SDL_CreateMutex()) {
@@ -34,10 +35,15 @@ Enemy::~Enemy() {
 	SDL_SemWait(m_deleteSem);
 	SDL_DestroyMutex(m_lock);
 	SDL_DestroySemaphore(m_sem);
+	SDL_DestroySemaphore(m_deleteSem);
 }
 
 int Enemy::getIndexPos() const {
 	return m_indexPos;
+}
+
+bool Enemy::getAlive() const {
+	return m_isAlive;
 }
 
 SDL_sem * Enemy::getSem() const {
@@ -60,10 +66,15 @@ void Enemy::update(Graph<Tile*> * graph, int size) {
 }
 
 void Enemy::render(Renderer * renderer) const {
-	renderer->drawWorldFillRect(Rect(m_worldPos, Size(0.5, 0.5)), Colour(255, 0, 0));
+	if (m_isAlive) {
+		renderer->drawWorldFillRect(Rect(m_worldPos, Size(0.5, 0.5)), Colour(255, 0, 0));
+	}
 }
 
 void Enemy::updatePath(Graph<Tile *> * graph, int size, int playerIndex) {
+	if (m_indexPos == playerIndex) {
+		m_isAlive = false;
+	}
 	if (m_funcComplete && playerIndex != m_indexPos) {
 		SDL_LockMutex(m_lock);
 		m_funcComplete = false;

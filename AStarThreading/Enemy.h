@@ -16,12 +16,14 @@ private:
 	SDL_mutex * m_lock;
 	bool m_recalculating;
 	bool m_funcComplete;
+	bool m_isAlive;
 	static void pathFunc(void * val);
 	std::tuple<Graph<Tile *> *, int> m_threadData;
 public:
 	Enemy(int pos = 0);
 	~Enemy();
 	int getIndexPos() const;
+	bool getAlive() const;
 	SDL_sem * getSem() const;
 	void update(Graph<Tile *> * graph, int size);
 	void render(Renderer * renderer) const;

@@ -10,7 +10,9 @@ InputManager::InputManager()
 
 InputManager::~InputManager()
 {
-
+	for (auto iter = listeners.begin(); iter != listeners.end(); iter++) {
+		delete iter->second;
+	}
 }
 
 void InputManager::AddListener(EventListener::Event evt, EventListener *listener)

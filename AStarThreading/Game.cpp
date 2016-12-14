@@ -66,6 +66,8 @@ void Game::reinitialise()
 {
 	ThreadQueue::getInstance()->stop();
 
+	std::cout << "resetting" << std::endl;
+
 	for (int i = 0; i < m_enemies.size(); i++)
 	{
 		delete m_enemies[i];
@@ -76,7 +78,10 @@ void Game::reinitialise()
 
 	initGraph();
 	initEnemies();
-	m_player->setIndexPos(0);
+	m_player->setIndexPos(rand() % (m_vpWidth * m_vpWidth));
+	if (m_graph->getNode(m_player->getIndexPos())->getVal()->getIsWall()) {
+		m_player->setIndexPos(m_player->getIndexPos() + 1);
+	}
 
 	float aspectRatio = m_screenSize.w / m_screenSize.h;
 	Size vpSize(m_vpWidth, m_vpWidth / aspectRatio);
@@ -87,6 +92,34 @@ void Game::reinitialise()
 
 	ThreadQueue::getInstance()->reset();
 	ThreadQueue::getInstance()->start();
+}
+
+void Game::randomiseConditions() {
+	int r = rand() % 2; // should be 3, however the max settings are too slow without A* optimisation, may add optimisation in future for myself
+	if (r == 0)
+	{
+		m_vpWidth = 30;
+		m_noOfEnemies = 5;
+		m_totalWalls = 3;
+		m_touchingWalls = 1;
+		reinitialise();
+	}
+	else if (r == 1)
+	{
+		m_vpWidth = 100;
+		m_noOfEnemies = 50;
+		m_totalWalls = 6;
+		m_touchingWalls = 2;
+		reinitialise();
+	}
+	else if (r == 2)
+	{
+		m_vpWidth = 1000;
+		m_noOfEnemies = 500;
+		m_totalWalls = 18;
+		m_touchingWalls = 4;
+		reinitialise();
+	}
 }
 
 bool Game::initGraph()
@@ -107,7 +140,7 @@ bool Game::initGraph()
 	std::vector<int> walls;
 	//setup walls
 	for (int i = 0; i < m_totalWalls; i++) {
-		int x = (i + 1) * size / (m_totalWalls + 1);
+		int x = (i + 1) * size / (m_totalWalls + 1) + rand() % (size / 10) - (size / 20);
 		if (isTouching[i]) {
 			int length = rand() % (size / 5) + (3 * size / 5);
 			if (rand() % 2 == 0) {
@@ -165,13 +198,9 @@ bool Game::initGraph()
 
 bool Game::initEnemies()
 {
-	//for (int i = 0; i < m_enemies.size(); i++)
-	//{
-	//	delete m_enemies[i];
-	//}
-	//m_enemies.clear();
+	int spawnZoneTopLeft = rand() % (m_vpWidth - m_noOfEnemies) + m_vpWidth * (rand() % (m_vpWidth - m_noOfEnemies));
 	for (int i = 0; i < m_noOfEnemies; i++) {
-		m_enemies.push_back(new Enemy(rand() % (m_vpWidth * m_vpWidth)));
+		m_enemies.push_back(new Enemy(spawnZoneTopLeft + rand() % m_noOfEnemies + m_vpWidth * (rand() % m_noOfEnemies)));
 		if (m_graph->getNode(m_enemies[i]->getIndexPos())->getVal()->getIsWall()) {
 			m_enemies[i]->setIndexPos(m_enemies[i]->getIndexPos() + 1);
 		}
@@ -194,15 +223,18 @@ void Game::update()
 	unsigned int currentTime = SDL_GetTicks();//millis since game started
 	unsigned int deltaTime = currentTime - lastTime;//time since last update
 
-													/*auto p = new std::vector<Tile *>();
-													m_graph->aStar(0, 45, p);*/
 	m_player->update(m_graph, m_vpWidth);
 
+	bool enemiesAlive = false;
 	for (int i = 0; i < m_enemies.size(); i++) {
 		m_enemies[i]->updatePath(m_graph, m_vpWidth, m_player->getIndexPos());
 		m_enemies[i]->update(m_graph, m_vpWidth);
+		enemiesAlive |= m_enemies[i]->getAlive();
 	}
-
+	if (!enemiesAlive) {
+		randomiseConditions();
+		reinitialise();
+	}
 
 	if (deltaTime > SCREEN_TICKS_PER_FRAME + 3)
 	{
